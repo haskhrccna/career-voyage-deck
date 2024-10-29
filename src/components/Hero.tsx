@@ -1,4 +1,5 @@
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, FileDown } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 const Hero = () => {
   return (
@@ -10,13 +11,22 @@ const Hero = () => {
         <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto animate-fade-up" style={{ animationDelay: '0.2s' }}>
           Exploring my professional path through experiences, skills, and achievements
         </p>
-        <a
-          href="#experience"
-          className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:text-lg animate-fade-up"
-          style={{ animationDelay: '0.4s' }}
-        >
-          Explore My Journey
-        </a>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
+          <a
+            href="#experience"
+            className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:text-lg"
+          >
+            Explore My Journey
+          </a>
+          <Button 
+            variant="outline"
+            className="inline-flex items-center justify-center px-8 py-3"
+            onClick={() => window.open('/resume.pdf', '_blank')}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Download CV
+          </Button>
+        </div>
       </div>
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
         <ArrowDown className="w-6 h-6 text-gray-400" />
