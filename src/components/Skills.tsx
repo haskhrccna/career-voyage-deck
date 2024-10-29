@@ -2,11 +2,11 @@ import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from 'react';
 
 const skills = [
-  { name: "Frontend Development", level: 90 },
-  { name: "Backend Development", level: 85 },
-  { name: "UI/UX Design", level: 75 },
-  { name: "Project Management", level: 80 },
-  { name: "Team Leadership", level: 85 }
+  { name: "Project Management", level: 95 },
+  { name: "Construction Supervision", level: 90 },
+  { name: "Power Transmission (up to 400kV)", level: 95 },
+  { name: "Infrastructure Design", level: 85 },
+  { name: "Tender Management", level: 90 }
 ];
 
 const Skills = () => {

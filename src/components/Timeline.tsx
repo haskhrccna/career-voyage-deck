@@ -4,27 +4,27 @@ import { Card } from "@/components/ui/card";
 const experiences = [
   {
     id: 1,
-    title: "Senior Software Engineer",
-    company: "Tech Corp",
-    date: "2020 - Present",
-    description: "Led development of core features and mentored junior developers",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
+    title: "Principal Resident Engineer-Electrical",
+    company: "AECOM Middle East",
+    date: "2024 - Present",
+    description: "Infrastructure and Landscaping Works Al Noud (Al Khrair) Al Ain",
+    image: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5"
   },
   {
     id: 2,
-    title: "Software Engineer",
-    company: "Innovation Labs",
-    date: "2018 - 2020",
-    description: "Developed and maintained multiple web applications",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085"
+    title: "Project Manager",
+    company: "Mott MacDonald Consultant",
+    date: "2022",
+    description: "Coordinated with EtihadWE (previously FEWA) and main contractors for power infrastructure projects across UAE. Managed design compliance, electrical safety, and project execution in North, Central, West and East areas.",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab"
   },
   {
     id: 3,
-    title: "Junior Developer",
-    company: "StartUp Inc",
-    date: "2016 - 2018",
-    description: "Contributed to frontend development and learned best practices",
-    image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
+    title: "Senior Project Manager",
+    company: "TRANSCO",
+    date: "Previous Position",
+    description: "Led the Supply and installation of 132kV Cables in Shakhbout city, Abu Dhabi UAE. Managed multiple high-voltage cable installation projects including 400kV cable routes in Qatar.",
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
   }
 ];
 
