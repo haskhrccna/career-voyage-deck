@@ -6,10 +6,10 @@ const Hero = () => {
     <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-blue-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 animate-fade-up">
-          Power Transmission Expert
+          Electrical Engineering Professional
         </h1>
         <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto animate-fade-up" style={{ animationDelay: '0.2s' }}>
-          International experience in project management, construction supervision, and design of power transmission lines up to 400kV across UAE, Qatar, Kuwait & Egypt
+          Specialized in high-voltage power systems with extensive experience in managing and supervising infrastructure projects across the Middle East
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
           <a
