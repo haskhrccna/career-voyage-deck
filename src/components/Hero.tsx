@@ -6,7 +6,7 @@ const Hero = () => {
     <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-blue-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 animate-fade-up">
-          Electrical Engineering Professional
+          Principal Resident Engineer
         </h1>
         <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto animate-fade-up" style={{ animationDelay: '0.2s' }}>
           Specialized in high-voltage power systems with extensive experience in managing and supervising infrastructure projects across the Middle East
