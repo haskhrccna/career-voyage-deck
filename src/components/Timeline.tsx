@@ -21,7 +21,7 @@ const experiences = [
   {
     id: 3,
     title: "Senior Project Manager",
-    company: "TRANSCO",
+    company: "AL BARRAK cont.",
     date: "Previous Position",
     description: "Led the Supply and installation of 132kV Cables in Shakhbout city, Abu Dhabi UAE. Managed multiple high-voltage cable installation projects including 400kV cable routes in Qatar.",
     image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
