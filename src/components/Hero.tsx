@@ -1,8 +1,11 @@
 import { ArrowDown } from 'lucide-react';
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { useLanguage } from '@/contexts/LanguageContext';
 import CVRequestForm from './CVRequestForm';
 
 const Hero = () => {
+  const { t } = useLanguage();
+
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 animate-gradient-xy overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.2),rgba(0,0,0,0))]" />
@@ -18,17 +21,17 @@ const Hero = () => {
           </Avatar>
         </div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 animate-fade-up">
-          Principal Resident Engineer
+          {t('hero.title')}
         </h1>
         <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto animate-fade-up opacity-90" style={{ animationDelay: '0.2s' }}>
-          Specialized in high-voltage power systems with extensive experience in managing and supervising infrastructure projects across the Middle East
+          {t('hero.subtitle')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
           <a
             href="#experience"
             className="inline-flex items-center justify-center px-8 py-3 border border-white/20 text-base font-medium rounded-md text-white bg-white/10 hover:bg-white/20 transition-colors md:text-lg backdrop-blur-sm"
           >
-            View Experience
+            {t('hero.viewExperience')}
           </a>
           <CVRequestForm />
         </div>
