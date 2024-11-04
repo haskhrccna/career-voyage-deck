@@ -4,14 +4,15 @@ import CVRequestForm from './CVRequestForm';
 
 const Hero = () => {
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-blue-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+    <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-br from-blue-100 via-purple-50 to-pink-50 animate-gradient-xy">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center relative">
         <div className="mb-8 flex justify-center">
-          <Avatar className="h-56 w-56 border-4 border-blue-100">
+          <Avatar className="h-56 w-56 border-4 border-white/50 shadow-xl">
             <AvatarImage
               src="/profile.jpg"
               alt="Profile photo"
-              className="object-cover object-center" // Removed pt-4 and added object-center
+              className="object-cover object-center"
             />
           </Avatar>
         </div>
