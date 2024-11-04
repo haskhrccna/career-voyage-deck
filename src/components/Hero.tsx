@@ -1,5 +1,5 @@
-import { ArrowDown, FileDown } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { ArrowDown } from 'lucide-react';
+import CVRequestForm from './CVRequestForm';
 
 const Hero = () => {
   return (
@@ -18,14 +18,7 @@ const Hero = () => {
           >
             View Experience
           </a>
-          <Button 
-            variant="outline"
-            className="inline-flex items-center justify-center px-8 py-3"
-            onClick={() => window.open('/resume.pdf', '_blank')}
-          >
-            <FileDown className="mr-2 h-4 w-4" />
-            Download CV
-          </Button>
+          <CVRequestForm />
         </div>
       </div>
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
