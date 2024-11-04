@@ -11,7 +11,7 @@ const Hero = () => {
             <AvatarImage
               src="/profile.jpg"
               alt="Profile photo"
-              className="object-cover pt-4" // Added padding-top to move image down
+              className="object-cover object-center" // Removed pt-4 and added object-center
             />
           </Avatar>
         </div>
