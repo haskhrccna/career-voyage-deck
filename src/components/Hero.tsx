@@ -9,7 +9,7 @@ const Hero = () => {
         <div className="mb-8 flex justify-center">
           <Avatar className="h-40 w-40 border-4 border-blue-100">
             <AvatarImage
-              src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/profile.jpg"
+              src="/profile.jpg"
               alt="Profile photo"
               className="object-cover"
             />
