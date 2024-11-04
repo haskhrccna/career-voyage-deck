@@ -7,11 +7,11 @@ const Hero = () => {
     <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-blue-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <div className="mb-8 flex justify-center">
-          <Avatar className="h-56 w-56 border-4 border-blue-100"> {/* Increased size here */}
+          <Avatar className="h-56 w-56 border-4 border-blue-100">
             <AvatarImage
               src="/profile.jpg"
               alt="Profile photo"
-              className="object-cover"
+              className="object-cover pt-4" // Added padding-top to move image down
             />
           </Avatar>
         </div>
