@@ -1,10 +1,20 @@
-import { ArrowDown, FileDown } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { ArrowDown } from 'lucide-react';
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import CVRequestForm from './CVRequestForm';
 
 const Hero = () => {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-b from-blue-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+        <div className="mb-8 flex justify-center">
+          <Avatar className="h-40 w-40 border-4 border-blue-100">
+            <AvatarImage
+              src="/profile.jpg"
+              alt="Profile photo"
+              className="object-cover"
+            />
+          </Avatar>
+        </div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 animate-fade-up">
           Principal Resident Engineer
         </h1>
@@ -18,14 +28,7 @@ const Hero = () => {
           >
             View Experience
           </a>
-          <Button 
-            variant="outline"
-            className="inline-flex items-center justify-center px-8 py-3"
-            onClick={() => window.open('/resume.pdf', '_blank')}
-          >
-            <FileDown className="mr-2 h-4 w-4" />
-            Download CV
-          </Button>
+          <CVRequestForm />
         </div>
       </div>
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
