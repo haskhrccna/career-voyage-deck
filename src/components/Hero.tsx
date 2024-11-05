@@ -1,4 +1,4 @@
-import { ArrowDown, Twitter, Linkedin } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from '@/contexts/LanguageContext';
 import CVRequestForm from './CVRequestForm';
@@ -34,26 +34,6 @@ const Hero = () => {
             {t('hero.viewExperience')}
           </a>
           <CVRequestForm />
-        </div>
-        <div className="mt-8 flex justify-center space-x-6 animate-fade-up" style={{ animationDelay: '0.6s' }}>
-          <a
-            href="https://twitter.com/haskhr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-white transition-colors"
-            aria-label="Twitter"
-          >
-            <Twitter className="h-6 w-6" />
-          </a>
-          <a
-            href="http://www.linkedin.com/in/haskhr/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-white transition-colors"
-            aria-label="LinkedIn"
-          >
-            <Linkedin className="h-6 w-6" />
-          </a>
         </div>
       </div>
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
