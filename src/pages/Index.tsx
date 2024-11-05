@@ -4,6 +4,7 @@ import Skills from "@/components/Skills";
 import Footer from "@/components/Footer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProjectImages from "@/components/ProjectImages";
+import Certifications from "@/components/Certifications";
 
 const Index = () => {
   return (
@@ -11,6 +12,7 @@ const Index = () => {
       <ScrollArea className="flex-1">
         <Hero />
         <Timeline />
+        <Certifications />
         <Skills />
         <ProjectImages />
       </ScrollArea>

@@ -75,6 +75,9 @@ export const en = {
       }
     }
   },
+  certifications: {
+    title: "Professional Certifications"
+  },
   skills: {
     title: "Skills & Expertise",
     items: {

@@ -75,6 +75,9 @@ export const ar = {
       }
     }
   },
+  certifications: {
+    title: "الشهادات المهنية"
+  },
   skills: {
     title: "المهارات والخبرات",
     items: {
