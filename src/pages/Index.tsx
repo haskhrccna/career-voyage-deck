@@ -9,8 +9,8 @@ const Index = () => {
   return (
     <div className="h-screen bg-slate-900 flex flex-col overflow-hidden">
       <Navigation />
+      <Hero />
       <ScrollArea className="flex-1">
-        <Hero />
         <Timeline />
         <Skills />
       </ScrollArea>
