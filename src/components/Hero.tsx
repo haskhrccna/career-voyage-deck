@@ -18,7 +18,7 @@ const Hero = () => {
             />
           </Avatar>
           <div className="flex-grow text-center md:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 animate-fade-up">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 animate-fade-up">
               {t('hero.title')}
             </h1>
             <p className="text-lg text-gray-300 animate-fade-up opacity-90" style={{ animationDelay: '0.2s' }}>
