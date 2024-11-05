@@ -8,8 +8,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
       <Navigation />
-      <div className="flex-1">
-        <Hero />
+      <Hero />
+      <div className="flex-1 overflow-y-auto">
         <Timeline />
         <Skills />
       </div>
