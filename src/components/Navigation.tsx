@@ -52,9 +52,9 @@ const Navigation = () => {
           
           <div className="hidden md:flex md:items-center">
             <div className="ml-10 flex items-center space-x-4">
-              <a href="#home" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <Link to="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 {t('nav.home')}
-              </a>
+              </Link>
               <a href="#experience" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 {t('nav.experience')}
               </a>
@@ -99,9 +99,9 @@ const Navigation = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900 shadow-lg">
-            <a href="#home" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
+            <Link to="/" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
               {t('nav.home')}
-            </a>
+            </Link>
             <a href="#experience" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
               {t('nav.experience')}
             </a>
