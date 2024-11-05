@@ -26,7 +26,7 @@ export const en = {
         description: "Coordinated with EtihadWE (previously FEWA) and main contractors for power infrastructure projects across UAE. Managed design compliance, electrical safety, and project execution in North, Central, West and East areas."
       },
       position3: {
-        title: "Senior Project Manager",
+        title: "Project Manager",
         company: "AL BARRAK cont.",
         date: "Previous Position",
         description: "Led the Supply and installation of 132kV Cables in Shakhbout city, Abu Dhabi UAE. Managed multiple high-voltage cable installation projects including 400kV cable routes in Qatar."

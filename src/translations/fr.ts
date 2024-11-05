@@ -26,7 +26,7 @@ export const fr = {
         description: "Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux pour les projets d'infrastructure électrique aux EAU. Gestion de la conformité des conceptions, de la sécurité électrique et de l'exécution des projets dans les zones Nord, Centre, Ouest et Est."
       },
       position3: {
-        title: "Chef de Projet Senior",
+        title: "Chef de Projet",
         company: "AL BARRAK cont.",
         date: "Poste Précédent",
         description: "Direction de la fourniture et de l'installation de câbles 132kV dans la ville de Shakhbout, Abu Dhabi EAU. Gestion de multiples projets d'installation de câbles haute tension, y compris des tracés de 400kV au Qatar."
