@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -87,7 +86,7 @@ const ContactForm = () => {
                 />
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 md:w-1/2">
               <label htmlFor="subject" className="text-sm font-medium text-white">
                 Subject
               </label>
