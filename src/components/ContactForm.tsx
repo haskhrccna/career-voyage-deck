@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ContactForm = () => {
   const { t } = useLanguage();
@@ -14,6 +15,7 @@ const ContactForm = () => {
     email: "",
     subject: "",
     message: "",
+    requestCV: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -25,6 +27,7 @@ const ContactForm = () => {
       Name: ${formData.name}
       Email: ${formData.email}
       Message: ${formData.message}
+      CV Requested: ${formData.requestCV ? 'Yes' : 'No'}
     `);
     
     // Open default email client
@@ -43,11 +46,15 @@ const ContactForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, requestCV: checked }));
+  };
+
   return (
     <section id="contact" className="py-20 bg-slate-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-white">
-          Contact Me
+          Contact
         </h2>
         <div className="bg-slate-800 rounded-lg p-6 shadow-lg animate-fade-up">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,6 +112,20 @@ const ContactForm = () => {
                 onChange={handleChange}
                 className="min-h-[150px] bg-slate-700 border-slate-600 text-white"
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="requestCV"
+                checked={formData.requestCV}
+                onCheckedChange={handleCheckboxChange}
+                className="data-[state=checked]:bg-purple-600"
+              />
+              <label
+                htmlFor="requestCV"
+                className="text-sm font-medium leading-none text-white cursor-pointer"
+              >
+                Request CV
+              </label>
             </div>
             <Button type="submit" className="w-full">
               <Mail className="mr-2 h-4 w-4" />
