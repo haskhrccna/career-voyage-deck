@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Globe, Twitter, Linkedin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +27,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center space-x-4">
-            <span className="text-xl font-bold text-white">Portfolio</span>
+            <Link to="/" className="text-xl font-bold text-white">Portfolio</Link>
             <div className="flex space-x-3">
               <a
                 href="https://twitter.com/haskhr"
@@ -60,9 +61,9 @@ const Navigation = () => {
               <a href="#skills" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 {t('nav.skills')}
               </a>
-              <a href="#contact" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <Link to="/contact" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Contact Me
-              </a>
+              </Link>
               
               <DropdownMenu>
                 <DropdownMenuTrigger className="inline-flex items-center justify-center text-gray-300 hover:text-white focus:outline-none">
@@ -107,9 +108,9 @@ const Navigation = () => {
             <a href="#skills" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
               {t('nav.skills')}
             </a>
-            <a href="#contact" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
+            <Link to="/contact" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
               Contact Me
-            </a>
+            </Link>
             <div className="px-3 py-2">
               <DropdownMenu>
                 <DropdownMenuTrigger className="inline-flex items-center justify-center text-gray-300 hover:text-white focus:outline-none">
