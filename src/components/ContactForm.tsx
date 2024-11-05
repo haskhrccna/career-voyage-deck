@@ -18,14 +18,19 @@ const ContactForm = () => {
     requestCV: false,
   });
 
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Create mailto link with form data
-    const subject = encodeURIComponent(formData.subject);
+    const subject = encodeURIComponent("Portfolio Website");
     const body = encodeURIComponent(`
       Name: ${formData.name}
       Email: ${formData.email}
+      Subject: ${formData.subject}
       Message: ${formData.message}
       CV Requested: ${formData.requestCV ? 'Yes' : 'No'}
     `);
@@ -134,7 +139,11 @@ const ContactForm = () => {
                 className="min-h-[150px] bg-slate-700 border-slate-600 text-white"
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={!isValidEmail(formData.email)}
+            >
               <Mail className="mr-2 h-4 w-4" />
               Send Message
             </Button>
