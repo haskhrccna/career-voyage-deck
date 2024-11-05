@@ -9,12 +9,11 @@ import {
 } from "@/components/ui/carousel";
 
 const IMAGES = [
-  "photo-1581091226825-a6a2a5aee158",
-  "photo-1488590528505-98d2b5aba04b",
-  "photo-1518770660439-4636190af475",
-  "photo-1461749280684-dccba630e2f6",
-  "photo-1486312338219-ce68d2c6f44d"
-].map(id => `https://images.unsplash.com/${id}`);
+  "/cable-installation.jpg",    // Image of cable reel and workers
+  "/equipment-setup.jpg",       // Image of workers with equipment
+  "/concrete-blocks.jpg",       // Image of concrete blocks in trench
+  "/control-panel.jpg"         // Image of control panel installation
+].map(path => import.meta.env.BASE_URL + path);
 
 const Hero = () => {
   const { t } = useLanguage();
@@ -50,7 +49,7 @@ const Hero = () => {
                   <div className="relative h-48 w-full overflow-hidden rounded-lg">
                     <img
                       src={src}
-                      alt={`Slide ${index + 1}`}
+                      alt={`Construction project phase ${index + 1}`}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                   </div>
