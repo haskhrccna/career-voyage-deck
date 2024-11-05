@@ -29,6 +29,14 @@ const Timeline = () => {
       date: t('experience.positions.position3.date'),
       description: t('experience.positions.position3.description'),
       image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
+    },
+    {
+      id: 4,
+      title: t('experience.positions.position4.title'),
+      company: t('experience.positions.position4.company'),
+      date: t('experience.positions.position4.date'),
+      description: t('experience.positions.position4.description'),
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
     }
   ];
 

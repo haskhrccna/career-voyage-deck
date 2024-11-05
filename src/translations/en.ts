@@ -30,6 +30,12 @@ export const en = {
         company: "AL BARRAK cont.",
         date: "Previous Position",
         description: "Led the Supply and installation of 132kV Cables in Shakhbout city, Abu Dhabi UAE. Managed multiple high-voltage cable installation projects including 400kV cable routes in Qatar."
+      },
+      position4: {
+        title: "Project Manager",
+        company: "Furukawa Electrical Co.",
+        date: "2016-2019",
+        description: "Design & supervision and practice of electrical engineering on installation, testing and commissioning of HV/EHV power Cables, and FO cable works for power transmission & distribution system as per standards and regulations for 400kV EHV cable projects based in Doha, Qatar."
       }
     }
   },
