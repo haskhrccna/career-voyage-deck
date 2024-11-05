@@ -46,11 +46,11 @@ const Hero = () => {
             <CarouselContent>
               {IMAGES.map((src, index) => (
                 <CarouselItem key={index} className="basis-full">
-                  <div className="relative h-48 w-full overflow-hidden rounded-lg">
+                  <div className="relative h-48 w-full overflow-hidden rounded-lg group">
                     <img
                       src={src}
                       alt={`Construction project phase ${index + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-125 group-hover:object-contain"
                     />
                   </div>
                 </CarouselItem>
