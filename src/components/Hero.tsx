@@ -13,7 +13,7 @@ const IMAGES = [
   "/equipment-setup.jpg",       // Image of workers with equipment
   "/concrete-blocks.jpg",       // Image of concrete blocks in trench
   "/control-panel.jpg"         // Image of control panel installation
-].map(path => import.meta.env.BASE_URL + path);
+];
 
 const Hero = () => {
   const { t } = useLanguage();
@@ -27,7 +27,7 @@ const Hero = () => {
           <div className="flex items-start gap-8">
             <Avatar className="h-32 w-32 flex-shrink-0 border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-300">
               <AvatarImage
-                src={import.meta.env.BASE_URL + "profile.jpg"}
+                src="/profile.jpg"
                 alt="Profile photo"
                 className="object-cover object-center"
               />
