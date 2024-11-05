@@ -54,9 +54,12 @@ const Certifications = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-white">{t('certifications.title')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certifications.map((cert) => (
-            <Card key={cert.id} className="bg-slate-800 p-6 hover:bg-slate-700 transition-colors">
+            <Card 
+              key={cert.id} 
+              className="bg-slate-800 p-6 hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl cursor-pointer"
+            >
               <div className="flex items-start space-x-4">
-                <Award className="w-6 h-6 text-blue-400 mt-1 flex-shrink-0" />
+                <Award className="w-6 h-6 text-blue-400 mt-1 flex-shrink-0 transition-transform duration-300 group-hover:rotate-12" />
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">{cert.title}</h3>
                   <p className="text-sm text-gray-400">{cert.date}</p>
