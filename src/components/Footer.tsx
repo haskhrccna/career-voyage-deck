@@ -22,13 +22,14 @@ const Footer = () => {
   return (
     <footer className="w-full py-6 mt-auto bg-slate-900/90 backdrop-blur-md">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <div className="text-gray-400 text-sm flex items-center space-x-4">
-            <span>Last Updated on November 2024</span>
-            <span className="text-gray-400">•</span>
-            <span>Visitors: <span className="font-bold text-white">{visitorCount}</span></span>
-          </div>
+        <div className="grid grid-cols-3 items-center">
           <div className="text-gray-400 text-sm">
+            Last Updated on November 2024
+          </div>
+          <div className="text-gray-400 text-sm text-center">
+            Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
+          </div>
+          <div className="text-gray-400 text-sm text-right">
             {today}
           </div>
         </div>
