@@ -48,6 +48,12 @@ export const en = {
         company: "EXSYM Corporation",
         date: "2008-2012",
         description: "Construction supervision, technical/commercial evaluations for bidders' offers, design review and tendering of 132kV/220kV/400kV EHV cable projects based in Doha, Qatar."
+      },
+      position7: {
+        title: "Cable Maintenance Engineer",
+        company: "Ministry of Electricity and Water (MEW) Kuwait",
+        date: "Nov 2002 – Nov 2005",
+        description: "Supervised cable activities including excavation, laying, and jointing. Managed subcontractors, prepared safety permits, monitored progress, and supervised high voltage testing for 33kV-300kV cables. Responsible for fault location, repair activities, and switching operations across substations."
       }
     }
   },
