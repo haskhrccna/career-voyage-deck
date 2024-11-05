@@ -36,6 +36,18 @@ export const en = {
         company: "Furukawa Electrical Co.",
         date: "2016-2019",
         description: "Design & supervision and practice of electrical engineering on installation, testing and commissioning of HV/EHV power Cables, and FO cable works for power transmission & distribution system as per standards and regulations for 400kV EHV cable projects based in Doha, Qatar."
+      },
+      position5: {
+        title: "Project Manager Electrical Works",
+        company: "KEO International Consultants",
+        date: "2012-2016",
+        description: "Design & supervision on MV/LV electrical installation works for infrastructure and Highway roads projects and, testing and commissioning, project based in Doha, Qatar."
+      },
+      position6: {
+        title: "Project Manager",
+        company: "EXSYM Corporation",
+        date: "2008-2012",
+        description: "Construction supervision, technical/commercial evaluations for bidders' offers, design review and tendering of 132kV/220kV/400kV EHV cable projects based in Doha, Qatar."
       }
     }
   },
