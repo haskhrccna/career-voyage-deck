@@ -87,19 +87,40 @@ const ContactForm = () => {
                 />
               </div>
             </div>
-            <div className="space-y-2 md:w-1/2">
-              <label htmlFor="subject" className="text-sm font-medium text-white">
-                Subject
-              </label>
-              <Input
-                id="subject"
-                name="subject"
-                required
-                value={formData.subject}
-                onChange={handleChange}
-                className="bg-slate-700 border-slate-600 text-white"
-              />
+            <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-4">
+              <div className="space-y-2 md:w-1/2">
+                <label htmlFor="subject" className="text-sm font-medium text-white">
+                  Subject
+                </label>
+                <Input
+                  id="subject"
+                  name="subject"
+                  required
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="bg-slate-700 border-slate-600 text-white"
+                />
+              </div>
+              <div className="flex items-center space-x-2 md:pt-8">
+                <Checkbox
+                  id="requestCV"
+                  checked={formData.requestCV}
+                  onCheckedChange={handleCheckboxChange}
+                  className="data-[state=checked]:bg-purple-600"
+                />
+                <label
+                  htmlFor="requestCV"
+                  className="text-sm font-medium leading-none text-white cursor-pointer"
+                >
+                  Request CV
+                </label>
+              </div>
             </div>
+            {formData.requestCV && (
+              <div className="text-sm text-purple-400 italic">
+                You have asked for a copy of CV to be sent back
+              </div>
+            )}
             <div className="space-y-2">
               <label htmlFor="message" className="text-sm font-medium text-white">
                 Message
@@ -112,20 +133,6 @@ const ContactForm = () => {
                 onChange={handleChange}
                 className="min-h-[150px] bg-slate-700 border-slate-600 text-white"
               />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="requestCV"
-                checked={formData.requestCV}
-                onCheckedChange={handleCheckboxChange}
-                className="data-[state=checked]:bg-purple-600"
-              />
-              <label
-                htmlFor="requestCV"
-                className="text-sm font-medium leading-none text-white cursor-pointer"
-              >
-                Request CV
-              </label>
             </div>
             <Button type="submit" className="w-full">
               <Mail className="mr-2 h-4 w-4" />
