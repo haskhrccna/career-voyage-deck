@@ -13,31 +13,29 @@ const Hero = () => {
         <CVRequestForm />
       </div>
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-          <div className="flex flex-col items-center md:items-start space-y-4">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
-              <Avatar className="h-32 w-32 border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-300">
-                <AvatarImage
-                  src={import.meta.env.BASE_URL + "profile.jpg"}
-                  alt="Profile photo"
-                  className="object-cover object-center"
-                />
-              </Avatar>
-              <div className="text-left">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 animate-fade-up">
-                  {t('hero.title')}
-                </h1>
-                <p className="text-lg md:text-xl text-gray-300 animate-fade-up opacity-90" style={{ animationDelay: '0.2s' }}>
-                  {t('hero.subtitle')}
-                </p>
-              </div>
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-start gap-8">
+            <Avatar className="h-32 w-32 flex-shrink-0 border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-300">
+              <AvatarImage
+                src={import.meta.env.BASE_URL + "profile.jpg"}
+                alt="Profile photo"
+                className="object-cover object-center"
+              />
+            </Avatar>
+            <div className="flex-grow text-left pr-48">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 animate-fade-up">
+                {t('hero.title')}
+              </h1>
+              <p className="text-lg text-gray-300 animate-fade-up opacity-90" style={{ animationDelay: '0.2s' }}>
+                {t('hero.subtitle')}
+              </p>
             </div>
-            <img 
-              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
-              alt="Placeholder"
-              className="w-full h-48 object-cover rounded-lg shadow-xl"
-            />
           </div>
+          <img 
+            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+            alt="Placeholder"
+            className="w-full h-48 object-cover rounded-lg shadow-xl"
+          />
         </div>
       </div>
     </section>
