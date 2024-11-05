@@ -37,7 +37,7 @@ const Hero = () => {
         </div>
         <div className="mt-8 flex justify-center space-x-6 animate-fade-up" style={{ animationDelay: '0.6s' }}>
           <a
-            href="https://twitter.com/yourusername"
+            href="https://twitter.com/haskhr"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors"
@@ -46,7 +46,7 @@ const Hero = () => {
             <Twitter className="h-6 w-6" />
           </a>
           <a
-            href="https://linkedin.com/in/yourusername"
+            href="http://www.linkedin.com/in/haskhr/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors"
