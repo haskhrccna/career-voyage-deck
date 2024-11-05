@@ -1,5 +1,20 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+const IMAGES = [
+  "photo-1581091226825-a6a2a5aee158",
+  "photo-1488590528505-98d2b5aba04b",
+  "photo-1518770660439-4636190af475",
+  "photo-1461749280684-dccba630e2f6",
+  "photo-1486312338219-ce68d2c6f44d"
+].map(id => `https://images.unsplash.com/${id}`);
 
 const Hero = () => {
   const { t } = useLanguage();
@@ -27,11 +42,24 @@ const Hero = () => {
               </p>
             </div>
           </div>
-          <img 
-            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
-            alt="Placeholder"
-            className="w-full h-48 object-cover rounded-lg shadow-xl"
-          />
+          
+          <Carousel className="w-full" opts={{ loop: true, duration: 20 }}>
+            <CarouselContent>
+              {IMAGES.map((src, index) => (
+                <CarouselItem key={index} className="basis-full">
+                  <div className="relative h-48 w-full overflow-hidden rounded-lg">
+                    <img
+                      src={src}
+                      alt={`Slide ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-2" />
+            <CarouselNext className="right-2" />
+          </Carousel>
         </div>
       </div>
     </section>
