@@ -27,9 +27,9 @@ export const fr = {
       },
       position3: {
         title: "Chef de Projet",
-        company: "AL BARRAK cont.",
-        date: "Poste Précédent",
-        description: "Direction de la fourniture et de l'installation de câbles 132kV dans la ville de Shakhbout, Abu Dhabi EAU. Gestion de multiples projets d'installation de câbles haute tension, y compris des tracés de 400kV au Qatar."
+        company: "AL BARRAK Electrical Cont.",
+        date: "2020",
+        description: "Coordination avec les parties prenantes, finalisation des autorisations requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé à Abu Dhabi, EAU."
       }
     }
   },

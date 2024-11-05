@@ -27,9 +27,9 @@ export const en = {
       },
       position3: {
         title: "Project Manager",
-        company: "AL BARRAK cont.",
-        date: "Previous Position",
-        description: "Led the Supply and installation of 132kV Cables in Shakhbout city, Abu Dhabi UAE. Managed multiple high-voltage cable installation projects including 400kV cable routes in Qatar."
+        company: "AL BARRAK Electrical Cont.",
+        date: "2020",
+        description: "Coordination with the stakeholders, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in Abu Dhabi UAE."
       },
       position4: {
         title: "Project Manager",
