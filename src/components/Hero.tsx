@@ -14,7 +14,7 @@ const Hero = () => {
         <div className="mb-8 flex justify-center">
           <Avatar className="h-56 w-56 border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-300">
             <AvatarImage
-              src="/profile.jpg"
+              src={import.meta.env.BASE_URL + "profile.jpg"}
               alt="Profile photo"
               className="object-cover object-center"
             />
