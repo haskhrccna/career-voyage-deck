@@ -10,6 +10,10 @@ const Hero = () => {
     <section id="home" className="min-h-screen flex items-center justify-center relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 animate-gradient-xy overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.2),rgba(0,0,0,0))]" />
       <div className="absolute w-full h-full bg-[url('/grid.svg')] opacity-20" />
+      {/* CV Request Button positioned in upper right corner */}
+      <div className="absolute top-24 right-8 z-10">
+        <CVRequestForm />
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center relative">
         <div className="mb-8 flex justify-center">
           <Avatar className="h-56 w-56 border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-300">
@@ -26,15 +30,6 @@ const Hero = () => {
         <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto animate-fade-up opacity-90" style={{ animationDelay: '0.2s' }}>
           {t('hero.subtitle')}
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
-          <a
-            href="#experience"
-            className="inline-flex items-center justify-center px-8 py-3 border border-white/20 text-base font-medium rounded-md text-white bg-white/10 hover:bg-white/20 transition-colors md:text-lg backdrop-blur-sm"
-          >
-            {t('hero.viewExperience')}
-          </a>
-          <CVRequestForm />
-        </div>
       </div>
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
         <ArrowDown className="w-6 h-6 text-gray-400" />
