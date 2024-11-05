@@ -59,6 +59,13 @@ export const en = {
       powerTransmission: "Power Transmission (up to 400kV)",
       infrastructureDesign: "Infrastructure Design",
       tenderManagement: "Tender Management"
+    },
+    itSkills: {
+      title: "IT Skills",
+      microsoftOffice: "Microsoft Office",
+      pythonProgramming: "Python Programming",
+      networking: "Networking",
+      linux: "Linux"
     }
   }
 };

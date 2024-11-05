@@ -14,6 +14,13 @@ const Skills = () => {
     { name: t('skills.items.tenderManagement'), level: 90 }
   ];
 
+  const itSkills = [
+    { name: t('skills.itSkills.microsoftOffice'), level: 99 },
+    { name: t('skills.itSkills.pythonProgramming'), level: 95 },
+    { name: t('skills.itSkills.networking'), level: 97 },
+    { name: t('skills.itSkills.linux'), level: 90 }
+  ];
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -40,23 +47,50 @@ const Skills = () => {
     <section id="skills" className="py-20 bg-slate-900">
       <div id="skills-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-white">{t('skills.title')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {skills.map((skill, index) => (
-            <div
-              key={skill.name}
-              className="bg-slate-800 p-6 rounded-lg shadow-sm animate-fade-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex justify-between mb-2">
-                <span className="font-medium text-white">{skill.name}</span>
-                <span className="text-blue-400">{skill.level}%</span>
+        
+        <div className="space-y-12">
+          {/* Technical Skills */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {skills.map((skill, index) => (
+              <div
+                key={skill.name}
+                className="bg-slate-800 p-6 rounded-lg shadow-sm animate-fade-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium text-white">{skill.name}</span>
+                  <span className="text-blue-400">{skill.level}%</span>
+                </div>
+                <Progress
+                  value={animated ? skill.level : 0}
+                  className="transition-all duration-1000 ease-out"
+                />
               </div>
-              <Progress
-                value={animated ? skill.level : 0}
-                className="transition-all duration-1000 ease-out"
-              />
+            ))}
+          </div>
+
+          {/* IT Skills */}
+          <div>
+            <h3 className="text-2xl font-bold text-center mb-8 text-white">{t('skills.itSkills.title')}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {itSkills.map((skill, index) => (
+                <div
+                  key={skill.name}
+                  className="bg-slate-800 p-6 rounded-lg shadow-sm animate-fade-up"
+                  style={{ animationDelay: `${(index + skills.length) * 0.1}s` }}
+                >
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium text-white">{skill.name}</span>
+                    <span className="text-blue-400">{skill.level}%</span>
+                  </div>
+                  <Progress
+                    value={animated ? skill.level : 0}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>

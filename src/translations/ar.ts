@@ -59,6 +59,13 @@ export const ar = {
       powerTransmission: "نقل الطاقة (حتى ٤٠٠ كيلو فولت)",
       infrastructureDesign: "تصميم البنية التحتية",
       tenderManagement: "إدارة المناقصات"
+    },
+    itSkills: {
+      title: "مهارات تقنية المعلومات",
+      microsoftOffice: "مايكروسوفت أوفيس",
+      pythonProgramming: "برمجة بايثون",
+      networking: "الشبكات",
+      linux: "لينكس"
     }
   }
 };

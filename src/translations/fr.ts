@@ -41,6 +41,13 @@ export const fr = {
       powerTransmission: "Transmission Électrique (jusqu'à 400kV)",
       infrastructureDesign: "Conception d'Infrastructure",
       tenderManagement: "Gestion des Appels d'Offres"
+    },
+    itSkills: {
+      title: "Compétences Informatiques",
+      microsoftOffice: "Microsoft Office",
+      pythonProgramming: "Programmation Python",
+      networking: "Réseaux",
+      linux: "Linux"
     }
   }
 };
