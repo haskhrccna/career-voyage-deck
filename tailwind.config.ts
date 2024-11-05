@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -78,12 +78,8 @@ export default {
           },
         },
         "fade-in": {
-          "0%": {
-            opacity: "0",
-          },
-          "100%": {
-            opacity: "1",
-          },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
         "gradient-xy": {
           "0%, 100%": {
@@ -94,6 +90,17 @@ export default {
             "background-size": "200% 200%",
             "background-position": "right center"
           }
+        },
+        "morph": {
+          "0%": { 
+            "border-radius": "60% 40% 30% 70%/60% 30% 70% 40%",
+          },
+          "50%": { 
+            "border-radius": "30% 60% 70% 40%/50% 60% 30% 60%",
+          },
+          "100%": { 
+            "border-radius": "60% 40% 30% 70%/60% 30% 70% 40%",
+          }
         }
       },
       animation: {
@@ -102,8 +109,11 @@ export default {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
         "gradient-xy": "gradient-xy 15s ease infinite",
+        "morph": "morph 8s ease-in-out infinite",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
+export default config;
