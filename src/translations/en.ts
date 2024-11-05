@@ -66,6 +66,12 @@ export const en = {
         company: "High Voltage Equipment – Egyptian Army",
         date: "1998-2000",
         description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage networks across multiple stadium projects in Egypt, ensuring compliance with contract and Egyptian standards."
+      },
+      position10: {
+        title: "B.Sc. Electronics Engineering",
+        company: "Mansoura University, Egypt",
+        date: "May 1997",
+        description: "Bachelor of Science degree in Electronics Engineering"
       }
     }
   },

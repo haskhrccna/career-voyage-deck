@@ -66,6 +66,12 @@ export const fr = {
         company: "Équipement Haute Tension – Armée Égyptienne",
         date: "1998-2000",
         description: "Contrôle du fonctionnement des équipements et supervision de la maintenance régulière. Formation du nouveau personnel. Supervision des travaux électriques pour les réseaux basse, moyenne et haute tension dans plusieurs projets de stades en Égypte."
+      },
+      position10: {
+        title: "B.Sc. Génie Électronique",
+        company: "Université de Mansoura, Égypte",
+        date: "Mai 1997",
+        description: "Diplôme de Bachelor en Sciences en Génie Électronique"
       }
     }
   },
