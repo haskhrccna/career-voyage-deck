@@ -61,6 +61,22 @@ const Timeline = () => {
       date: t('experience.positions.position7.date'),
       description: t('experience.positions.position7.description'),
       image: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5"
+    },
+    {
+      id: 8,
+      title: t('experience.positions.position8.title'),
+      company: t('experience.positions.position8.company'),
+      date: t('experience.positions.position8.date'),
+      description: t('experience.positions.position8.description'),
+      image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789"
+    },
+    {
+      id: 9,
+      title: t('experience.positions.position9.title'),
+      company: t('experience.positions.position9.company'),
+      date: t('experience.positions.position9.date'),
+      description: t('experience.positions.position9.description'),
+      image: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5"
     }
   ];
 

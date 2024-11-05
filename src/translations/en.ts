@@ -54,6 +54,18 @@ export const en = {
         company: "Ministry of Electricity and Water (MEW) Kuwait",
         date: "Nov 2002 – Nov 2005",
         description: "Supervised cable activities including excavation, laying, and jointing. Managed subcontractors, prepared safety permits, monitored progress, and supervised high voltage testing for 33kV-300kV cables. Responsible for fault location, repair activities, and switching operations across substations."
+      },
+      position8: {
+        title: "Cable Maintenance Engineer",
+        company: "Kahromica Company, Kuwait",
+        date: "Sep 2001 – Nov 2002",
+        description: "Supervised cable activities including excavation, laying, and jointing. Managed cable works and subcontractors. Responsible for oil-filled cable fault location, repair activities, and pilot cable fault locating and repairs."
+      },
+      position9: {
+        title: "Electrical Maintenance Engineer",
+        company: "High Voltage Equipment – Egyptian Army",
+        date: "1998-2000",
+        description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage networks across multiple stadium projects in Egypt, ensuring compliance with contract and Egyptian standards."
       }
     }
   },
