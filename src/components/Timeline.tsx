@@ -1,7 +1,6 @@
 import { Briefcase, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useLanguage } from '@/contexts/LanguageContext';
-import ImageCarousel from './ImageCarousel';
 
 const Timeline = () => {
   const { t } = useLanguage();
@@ -63,8 +62,7 @@ const Timeline = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-center text-white">{t('experience.title')}</h2>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-        <ImageCarousel />
-        <div className="relative mt-16">
+        <div className="relative">
           <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-blue-200" />
           <div className="space-y-20">
             {experiences.map((experience, index) => (
