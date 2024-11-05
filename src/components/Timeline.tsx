@@ -59,7 +59,7 @@ const Timeline = () => {
   return (
     <section id="experience" className="py-10 bg-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-white">{t('experience.title')}</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-16 text-white">{t('experience.title')}</h2>
         <div className="relative">
           <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-blue-200" />
           <div className="space-y-20">
