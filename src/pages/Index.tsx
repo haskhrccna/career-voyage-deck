@@ -4,6 +4,7 @@ import Timeline from "@/components/Timeline";
 import Skills from "@/components/Skills";
 import Footer from "@/components/Footer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ProjectImages from "@/components/ProjectImages";
 
 const Index = () => {
   return (
@@ -13,6 +14,7 @@ const Index = () => {
         <Hero />
         <Timeline />
         <Skills />
+        <ProjectImages />
       </ScrollArea>
       <Footer />
     </div>
