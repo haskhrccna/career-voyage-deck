@@ -1,34 +1,30 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
-import { LanguageProvider } from "./contexts/LanguageContext";
-import Navigation from "./components/Navigation";
-import { Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Contact from "./pages/Contact";
+import { BrowserRouter as Router } from 'react-router-dom';
+import Navigation from './components/Navigation';
+import Hero from './components/Hero';
+import Skills from './components/Skills';
+import Certifications from './components/Certifications';
+import ContactForm from './components/ContactForm';
+import Footer from './components/Footer';
+import { LanguageProvider } from './contexts/LanguageContext';
+import './App.css';
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <BrowserRouter>
-          <div className="min-h-screen bg-slate-900">
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/contact" element={<Contact />} />
-            </Routes>
-            <Toaster />
-            <Sonner />
-          </div>
-        </BrowserRouter>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <LanguageProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col bg-slate-900">
+          <Navigation />
+          <main>
+            <Hero />
+            <Skills />
+            <Certifications />
+            <ContactForm />
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </LanguageProvider>
+  );
+}
 
 export default App;
