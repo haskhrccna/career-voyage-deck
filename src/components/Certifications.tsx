@@ -12,8 +12,7 @@ const Certifications = () => {
         <Card 
           className="bg-gradient-to-br from-slate-800 to-slate-700 p-6 
             hover:from-slate-700 hover:to-slate-600
-            transition-all duration-300 transform 
-            hover:scale-105 hover:shadow-2xl cursor-pointer
+            transition-all duration-300 
             border border-slate-600 hover:border-blue-400"
         >
           <div className="flex items-start space-x-4">
