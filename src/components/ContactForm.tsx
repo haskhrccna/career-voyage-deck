@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Mail, Twitter } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -25,15 +25,22 @@ const ContactForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create Twitter mention text
-    const tweetText = encodeURIComponent(`@haskhr\n${formData.subject}\nFrom: ${formData.name}\nEmail: ${formData.email}\nMessage: ${formData.message}\n${formData.requestCV ? 'CV Requested' : ''}`);
+    // Create mailto link with form data
+    const subject = encodeURIComponent("Portfolio Website");
+    const body = encodeURIComponent(`
+      Name: ${formData.name}
+      Email: ${formData.email}
+      Subject: ${formData.subject}
+      Message: ${formData.message}
+      CV Requested: ${formData.requestCV ? 'Yes' : 'No'}
+    `);
     
-    // Open Twitter with pre-filled tweet
-    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+    // Open default email client
+    window.location.href = `mailto:haskhr@hotmail.com?subject=${subject}&body=${body}`;
     
     toast({
-      title: "Message Ready to Send",
-      description: "A new Twitter window has opened with your message. Please review and send the tweet.",
+      title: "Message Sent",
+      description: "Thank you for your message. I'll get back to you soon!",
     });
   };
 
@@ -137,8 +144,8 @@ const ContactForm = () => {
               className="w-full"
               disabled={!isValidEmail(formData.email)}
             >
-              <Twitter className="mr-2 h-4 w-4" />
-              Send as Tweet
+              <Mail className="mr-2 h-4 w-4" />
+              Send Message
             </Button>
           </form>
         </div>
