@@ -17,31 +17,57 @@ const ContactForm = () => {
     message: "",
     requestCV: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Create mailto link with form data
-    const subject = encodeURIComponent("Portfolio Website");
-    const body = encodeURIComponent(`
-      Name: ${formData.name}
-      Email: ${formData.email}
-      Subject: ${formData.subject}
-      Message: ${formData.message}
-      CV Requested: ${formData.requestCV ? 'Yes' : 'No'}
-    `);
-    
-    // Open default email client
-    window.location.href = `mailto:haskhr@hotmail.com?subject=${subject}&body=${body}`;
-    
-    toast({
-      title: "Message Sent",
-      description: "Thank you for your message. I'll get back to you soon!",
-    });
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/send-twitter-dm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          requestCV: formData.requestCV,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      toast({
+        title: "Message Sent",
+        description: "Thank you for your message. I'll get back to you soon!",
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        requestCV: false,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -75,6 +101,7 @@ const ContactForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className="bg-slate-700 border-slate-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -89,6 +116,7 @@ const ContactForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="bg-slate-700 border-slate-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -104,6 +132,7 @@ const ContactForm = () => {
                   value={formData.subject}
                   onChange={handleChange}
                   className="bg-slate-700 border-slate-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="flex items-center space-x-2 md:pt-8">
@@ -112,6 +141,7 @@ const ContactForm = () => {
                   checked={formData.requestCV}
                   onCheckedChange={handleCheckboxChange}
                   className="data-[state=checked]:bg-purple-600"
+                  disabled={isSubmitting}
                 />
                 <label
                   htmlFor="requestCV"
@@ -137,15 +167,16 @@ const ContactForm = () => {
                 value={formData.message}
                 onChange={handleChange}
                 className="min-h-[150px] bg-slate-700 border-slate-600 text-white"
+                disabled={isSubmitting}
               />
             </div>
             <Button 
               type="submit" 
               className="w-full"
-              disabled={!isValidEmail(formData.email)}
+              disabled={!isValidEmail(formData.email) || isSubmitting}
             >
               <Mail className="mr-2 h-4 w-4" />
-              Send Message
+              {isSubmitting ? "Sending..." : "Send Message"}
             </Button>
           </form>
         </div>
