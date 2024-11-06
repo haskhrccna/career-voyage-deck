@@ -9,7 +9,7 @@ export const pmpCertification: Certificate = {
   id: 2,
   title: "Project Management Professional (PMP)",
   date: "June 2023",
-  imageUrl: "https://images.credly.com/size/340x340/images/260e36dc-d100-45c3-852f-6d2a8c4032c8/pmp-600px.png"
+  imageUrl: "/pmp-cert.jpg"
 };
 
 export const otherCertifications: Certificate[] = [
@@ -35,7 +35,7 @@ export const otherCertifications: Certificate[] = [
     id: 5,
     title: "Cisco Certified DevNet Associate",
     date: "Jan 2022",
-    imageUrl: "https://images.credly.com/size/340x340/images/31736ead-c5b8-4c4e-894d-5e55d5664ac3/cisco_devnet_associate.png"
+    imageUrl: "/cisco-dev-cert.png"
   },
   {
     id: 6,
@@ -47,12 +47,12 @@ export const otherCertifications: Certificate[] = [
     id: 7,
     title: "PCAP – Certified Associate in Python Programming",
     date: "Sep 2021",
-    imageUrl: "https://images.credly.com/size/340x340/images/587b02d4-41d5-4a81-9b9d-b5076200713c/pcap-31-03-badge.png"
+    imageUrl: "/pcap-cert.jpg"
   },
   {
     id: 8,
     title: "MCSE (Microsoft Certified Systems Engineer)",
     date: "2001",
-    imageUrl: "https://images.credly.com/size/340x340/images/a31c0301-ff96-4cee-9435-0a4b40ce6e66/microsoft_certification_expert_badge.png"
+    imageUrl: "/mcse-cert.png"
   }
 ];
