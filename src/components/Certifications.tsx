@@ -13,7 +13,7 @@ const Certifications = () => {
         border border-slate-600 hover:border-blue-400"
     >
       <div className="flex items-start space-x-4">
-        <div className="w-24 h-24 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
+        <div className="w-48 h-24 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
           <img 
             src={cert.imageUrl} 
             alt={cert.title}
