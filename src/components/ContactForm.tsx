@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactForm = () => {
   const { t } = useLanguage();
@@ -28,23 +29,17 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/send-twitter-dm', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('send-twitter-dm', {
+        body: {
           name: formData.name,
           email: formData.email,
           subject: formData.subject,
           message: formData.message,
           requestCV: formData.requestCV,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
+      if (error) throw error;
 
       toast({
         title: "Message Sent",
@@ -60,6 +55,7 @@ const ContactForm = () => {
         requestCV: false,
       });
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again later.",
