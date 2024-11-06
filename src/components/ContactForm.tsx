@@ -29,7 +29,7 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-twitter-dm', {
+      const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           name: formData.name,
           email: formData.email,
