@@ -14,6 +14,7 @@ const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    companyName: "",
     subject: "",
     message: "",
     requestCV: false,
@@ -33,6 +34,7 @@ const ContactForm = () => {
         body: {
           name: formData.name,
           email: formData.email,
+          companyName: formData.companyName,
           subject: formData.subject,
           message: formData.message,
           requestCV: formData.requestCV,
@@ -50,6 +52,7 @@ const ContactForm = () => {
       setFormData({
         name: "",
         email: "",
+        companyName: "",
         subject: "",
         message: "",
         requestCV: false,
@@ -115,6 +118,20 @@ const ContactForm = () => {
                   disabled={isSubmitting}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="companyName" className="text-sm font-medium text-white">
+                Company Name
+              </label>
+              <Input
+                id="companyName"
+                name="companyName"
+                required
+                value={formData.companyName}
+                onChange={handleChange}
+                className="bg-slate-700 border-slate-600 text-white"
+                disabled={isSubmitting}
+              />
             </div>
             <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-4">
               <div className="space-y-2 md:w-1/2">
