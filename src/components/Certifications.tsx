@@ -13,7 +13,7 @@ const Certifications = () => {
         border border-slate-600 hover:border-blue-400"
     >
       <div className="flex items-start space-x-4">
-        <div className="w-48 h-48 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
+        <div className="w-24 h-24 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
           <img 
             src={cert.imageUrl} 
             alt={cert.title}
@@ -21,11 +21,11 @@ const Certifications = () => {
           />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white mb-3 
+          <h3 className="text-lg font-bold text-white mb-3 
             transition-all duration-300 hover:text-blue-300">
             {cert.title}
           </h3>
-          <p className="text-xs text-gray-300 transition-colors 
+          <p className="text-sm text-gray-300 transition-colors 
             duration-300 group-hover:text-gray-200">
             {cert.date}
           </p>
