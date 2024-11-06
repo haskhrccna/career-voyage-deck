@@ -39,7 +39,7 @@ const Footer = () => {
               Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
             </div>
             <div className="text-xs mt-1">
-              Last Updated Nov. 2024
+              Last updated Nov 2024
             </div>
           </div>
           <div className="text-gray-400 text-sm text-right">
