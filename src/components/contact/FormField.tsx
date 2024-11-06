@@ -22,8 +22,8 @@ const FormField = ({
   className = "",
 }: FormFieldProps) => {
   return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="text-sm font-medium text-white">
+    <div className="flex items-center space-x-4">
+      <label htmlFor={id} className="text-sm font-medium text-white w-32 flex-shrink-0">
         {label}
       </label>
       <Input
@@ -33,7 +33,7 @@ const FormField = ({
         required={required}
         value={value}
         onChange={onChange}
-        className={`bg-slate-700 border-slate-600 text-white ${className}`}
+        className={`bg-slate-700 border-slate-600 text-white flex-1 ${className}`}
         disabled={disabled}
       />
     </div>
