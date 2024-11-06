@@ -61,13 +61,16 @@ CV Requested: ${requestCV ? 'Yes' : 'No'}`;
       accessSecret: Deno.env.get('TWITTER_ACCESS_TOKEN_SECRET')!,
     });
 
+    // Create a read-write client
+    const rwClient = client.readWrite;
+
     console.log('🔍 Verifying Twitter credentials...');
     try {
-      const currentUser = await client.v2.me();
+      const currentUser = await rwClient.v2.me();
       console.log('✅ Successfully authenticated as Twitter user:', currentUser);
 
       console.log('📨 Attempting to send DM to user ID:', Deno.env.get('TWITTER_USER_ID'));
-      const result = await client.v2.sendDmToParticipant(
+      const result = await rwClient.v2.sendDmToParticipant(
         Deno.env.get('TWITTER_USER_ID')!,
         { text: dmText }
       );
@@ -86,9 +89,23 @@ CV Requested: ${requestCV ? 'Yes' : 'No'}`;
       console.error('Error details:', {
         message: twitterError.message,
         code: twitterError.code,
+        data: twitterError.data,
         stack: twitterError.stack
       });
-      throw new Error(`Twitter API Error: ${twitterError.message || 'Unknown error'}`);
+      
+      // Return a more detailed error response
+      return new Response(
+        JSON.stringify({ 
+          error: 'Twitter API Error', 
+          details: twitterError.message,
+          code: twitterError.code,
+          data: twitterError.data
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403
+        }
+      );
     }
   } catch (error: any) {
     console.error('❌ Error in send-twitter-dm function:', error);
