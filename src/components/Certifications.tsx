@@ -18,9 +18,13 @@ const Certifications = () => {
             border border-slate-600 hover:border-blue-400"
         >
           <div className="flex items-start space-x-4">
-            <Award className="w-8 h-8 text-blue-400 mt-1 flex-shrink-0 
-              transition-all duration-300 group-hover:rotate-12 
-              hover:text-blue-300" />
+            <div className="w-12 h-12 flex-shrink-0 overflow-hidden rounded-lg">
+              <img 
+                src={cert.imageUrl} 
+                alt={cert.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div>
               <h3 className="text-lg font-bold text-white mb-3 
                 transition-all duration-300 hover:text-blue-300">
