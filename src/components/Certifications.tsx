@@ -17,20 +17,27 @@ const Certifications = () => {
             hover:scale-105 hover:shadow-2xl cursor-pointer
             border border-slate-600 hover:border-blue-400"
         >
-          <div className="flex items-start space-x-4">
-            <Award className="w-8 h-8 text-blue-400 mt-1 flex-shrink-0 
-              transition-all duration-300 group-hover:rotate-12 
-              hover:text-blue-300" />
-            <div>
-              <h3 className="text-lg font-bold text-white mb-3 
-                transition-all duration-300 hover:text-blue-300">
-                {cert.title}
-              </h3>
-              <p className="text-sm text-gray-300 transition-colors 
-                duration-300 group-hover:text-gray-200">
-                {cert.date}
-              </p>
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-start space-x-4">
+              <Award className="w-8 h-8 text-blue-400 mt-1 flex-shrink-0 
+                transition-all duration-300 group-hover:rotate-12 
+                hover:text-blue-300" />
+              <div>
+                <h3 className="text-lg font-bold text-white mb-3 
+                  transition-all duration-300 hover:text-blue-300">
+                  {cert.title}
+                </h3>
+                <p className="text-sm text-gray-300 transition-colors 
+                  duration-300 group-hover:text-gray-200">
+                  {cert.date}
+                </p>
+              </div>
             </div>
+            <img 
+              src={cert.imageUrl} 
+              alt={cert.title}
+              className="w-24 h-24 object-contain mx-auto rounded-lg"
+            />
           </div>
         </Card>
       </HoverCardTrigger>
