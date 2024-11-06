@@ -31,6 +31,8 @@ export const getVisitorNumberByIp = async (ipAddress: string) => {
       .from('visitors')
       .select('visitor_number')
       .eq('ip_address', ipAddress)
+      .order('visited_at', { ascending: false })
+      .limit(1)
       .single();
 
     if (error) throw error;
