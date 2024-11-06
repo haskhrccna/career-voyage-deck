@@ -1,55 +1,37 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from "@/components/ui/card";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { pmpCertification, otherCertifications } from '@/data/certificateData';
 
 const Certifications = () => {
   const { t } = useLanguage();
 
   const CertificationCard = ({ cert }: { cert: typeof pmpCertification }) => (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <Card 
-          className="bg-gradient-to-br from-slate-800 to-slate-700 p-6 
-            hover:from-slate-700 hover:to-slate-600
-            transition-all duration-300 
-            border border-slate-600 hover:border-blue-400"
-        >
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
-              <img 
-                src={cert.imageUrl} 
-                alt={cert.title}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white mb-3 
-                transition-all duration-300 hover:text-blue-300">
-                {cert.title}
-              </h3>
-              <p className="text-sm text-gray-300 transition-colors 
-                duration-300 group-hover:text-gray-200">
-                {cert.date}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80 bg-slate-800 border-slate-700">
-        <div className="flex flex-col gap-2">
-          <div className="w-full h-48 bg-slate-900 rounded-lg overflow-hidden">
-            <img 
-              src={cert.imageUrl} 
-              alt={cert.title}
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <p className="text-sm text-gray-300">{cert.title}</p>
-          <p className="text-xs text-gray-400">Issued: {cert.date}</p>
+    <Card 
+      className="bg-gradient-to-br from-slate-800 to-slate-700 p-6 
+        hover:from-slate-700 hover:to-slate-600
+        transition-all duration-300 
+        border border-slate-600 hover:border-blue-400"
+    >
+      <div className="flex items-start space-x-4">
+        <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
+          <img 
+            src={cert.imageUrl} 
+            alt={cert.title}
+            className="w-full h-full object-contain"
+          />
         </div>
-      </HoverCardContent>
-    </HoverCard>
+        <div>
+          <h3 className="text-lg font-bold text-white mb-3 
+            transition-all duration-300 hover:text-blue-300">
+            {cert.title}
+          </h3>
+          <p className="text-sm text-gray-300 transition-colors 
+            duration-300 group-hover:text-gray-200">
+            {cert.date}
+          </p>
+        </div>
+      </div>
+    </Card>
   );
 
   return (
