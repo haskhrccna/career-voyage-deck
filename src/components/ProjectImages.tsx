@@ -1,8 +1,8 @@
 const IMAGES = [
-  "/images/projects/cable-installation.jpg",    // Image of cable reel and workers
-  "/images/projects/equipment-setup.jpg",       // Image of workers with equipment
-  "/images/projects/concrete-blocks.jpg",       // Image of concrete blocks in trench
-  "/images/projects/control-panel.jpg"         // Image of control panel installation
+  "/images/projects/cable-installation.jpg",
+  "/images/projects/equipment-setup.jpg",
+  "/images/projects/concrete-blocks.jpg",
+  "/images/projects/control-panel.jpg"
 ];
 
 const ProjectImages = () => {
@@ -14,13 +14,12 @@ const ProjectImages = () => {
           {IMAGES.map((src, index) => (
             <div 
               key={index} 
-              className="relative h-48 overflow-hidden rounded-lg group transition-all duration-500 hover:scale-150 hover:z-10"
+              className="relative h-48 overflow-hidden rounded-lg group"
             >
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-700 ease-in-out z-10" />
               <img
                 src={src}
                 alt={`Construction project phase ${index + 1}`}
-                className="w-full h-full object-cover transition-all duration-1000 ease-in-out transform will-change-transform group-hover:object-contain group-hover:z-20 group-hover:relative motion-safe:group-hover:animate-morph"
+                className="w-full h-full object-cover"
               />
             </div>
           ))}

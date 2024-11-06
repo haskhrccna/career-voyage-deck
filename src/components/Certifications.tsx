@@ -10,23 +10,21 @@ const Certifications = () => {
       className="bg-gradient-to-br from-slate-800 to-slate-700 p-6 
         hover:from-slate-700 hover:to-slate-600
         transition-all duration-300 
-        border border-slate-600 hover:border-blue-400"
+        border border-slate-600"
     >
       <div className="flex items-start space-x-4">
         <div className={`${cert.id === 2 ? 'w-48' : 'w-24'} h-24 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden`}>
           <img 
             src={cert.imageUrl} 
             alt={cert.title}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain p-2"
           />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white mb-3 
-            transition-all duration-300 hover:text-blue-300">
+          <h3 className="text-lg font-bold text-white mb-3">
             {cert.title}
           </h3>
-          <p className="text-sm text-gray-300 transition-colors 
-            duration-300 group-hover:text-gray-200">
+          <p className="text-sm text-gray-300">
             {cert.date}
           </p>
         </div>
