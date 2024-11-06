@@ -6,8 +6,12 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
+  console.log('🚀 Function started: send-twitter-dm');
+  console.log('Request method:', req.method);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response('ok', { headers: corsHeaders })
   }
 
@@ -21,14 +25,18 @@ Deno.serve(async (req) => {
       'TWITTER_USER_ID'
     ];
 
+    console.log('Validating environment variables...');
     for (const envVar of requiredEnvVars) {
       if (!Deno.env.get(envVar)) {
-        console.error(`Missing required environment variable: ${envVar}`);
-        throw new Error(`Configuration error: Missing ${envVar}`);
+        const error = `Missing required environment variable: ${envVar}`;
+        console.error('❌', error);
+        throw new Error(error);
       }
+      console.log('✅', envVar, 'is set');
     }
 
     if (req.method !== 'POST') {
+      console.log('❌ Invalid method:', req.method);
       return new Response('Method not allowed', { 
         status: 405,
         headers: corsHeaders
@@ -36,7 +44,7 @@ Deno.serve(async (req) => {
     }
 
     const { name, email, subject, message, requestCV } = await req.json();
-    console.log('Received form data:', { name, email, subject, requestCV });
+    console.log('📝 Received form data:', { name, email, subject, requestCV });
     
     const dmText = `New Contact Form Message:
 Name: ${name}
@@ -45,7 +53,7 @@ Subject: ${subject}
 Message: ${message}
 CV Requested: ${requestCV ? 'Yes' : 'No'}`;
 
-    console.log('Creating Twitter client...');
+    console.log('🔑 Creating Twitter client...');
     const client = new TwitterApi({
       appKey: Deno.env.get('TWITTER_API_KEY')!,
       appSecret: Deno.env.get('TWITTER_API_SECRET')!,
@@ -53,19 +61,18 @@ CV Requested: ${requestCV ? 'Yes' : 'No'}`;
       accessSecret: Deno.env.get('TWITTER_ACCESS_TOKEN_SECRET')!,
     });
 
-    console.log('Attempting to send DM to user ID:', Deno.env.get('TWITTER_USER_ID'));
-    
+    console.log('🔍 Verifying Twitter credentials...');
     try {
-      // First verify credentials to ensure API access is working
       const currentUser = await client.v2.me();
-      console.log('Successfully authenticated as Twitter user:', currentUser);
+      console.log('✅ Successfully authenticated as Twitter user:', currentUser);
 
+      console.log('📨 Attempting to send DM to user ID:', Deno.env.get('TWITTER_USER_ID'));
       const result = await client.v2.sendDmToParticipant(
         Deno.env.get('TWITTER_USER_ID')!,
         { text: dmText }
       );
       
-      console.log('DM sent successfully:', result);
+      console.log('✅ DM sent successfully:', result);
 
       return new Response(
         JSON.stringify({ message: 'Message sent successfully' }),
@@ -75,11 +82,20 @@ CV Requested: ${requestCV ? 'Yes' : 'No'}`;
         }
       );
     } catch (twitterError: any) {
-      console.error('Twitter API Error:', twitterError);
+      console.error('❌ Twitter API Error:', twitterError);
+      console.error('Error details:', {
+        message: twitterError.message,
+        code: twitterError.code,
+        stack: twitterError.stack
+      });
       throw new Error(`Twitter API Error: ${twitterError.message || 'Unknown error'}`);
     }
   } catch (error: any) {
-    console.error('Error in send-twitter-dm function:', error);
+    console.error('❌ Error in send-twitter-dm function:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack
+    });
     return new Response(
       JSON.stringify({ 
         error: 'Error sending message',
