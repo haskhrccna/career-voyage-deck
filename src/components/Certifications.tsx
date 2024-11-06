@@ -1,6 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from "@/components/ui/card";
-import { Award } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { pmpCertification, otherCertifications } from '@/data/certificateData';
 
@@ -18,11 +17,11 @@ const Certifications = () => {
             border border-slate-600 hover:border-blue-400"
         >
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 flex-shrink-0 overflow-hidden rounded-lg">
+            <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-900 overflow-hidden">
               <img 
                 src={cert.imageUrl} 
                 alt={cert.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
             <div>
@@ -40,11 +39,13 @@ const Certifications = () => {
       </HoverCardTrigger>
       <HoverCardContent className="w-80 bg-slate-800 border-slate-700">
         <div className="flex flex-col gap-2">
-          <img 
-            src={cert.imageUrl} 
-            alt={cert.title}
-            className="rounded-lg w-full h-auto"
-          />
+          <div className="w-full h-48 bg-slate-900 rounded-lg overflow-hidden">
+            <img 
+              src={cert.imageUrl} 
+              alt={cert.title}
+              className="w-full h-full object-contain"
+            />
+          </div>
           <p className="text-sm text-gray-300">{cert.title}</p>
           <p className="text-xs text-gray-400">Issued: {cert.date}</p>
         </div>
@@ -59,12 +60,10 @@ const Certifications = () => {
           {t('certifications.title')}
         </h2>
         
-        {/* PMP Certification in first row */}
         <div className="mb-6 max-w-xl mx-auto">
           <CertificationCard cert={pmpCertification} />
         </div>
 
-        {/* Other certifications grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {otherCertifications.map((cert) => (
             <CertificationCard key={cert.id} cert={cert} />
