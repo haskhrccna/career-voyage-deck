@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { trackVisitor, getVisitorNumberByIp } from '@/utils/visitorTracking';
+import { trackVisitor } from '@/utils/visitorTracking';
 
 const Footer = () => {
   const [visitorCount, setVisitorCount] = useState(0);
-  const [currentVisitorNumber, setCurrentVisitorNumber] = useState<number | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -14,11 +13,8 @@ const Footer = () => {
 
   useEffect(() => {
     const initializeVisitor = async () => {
-      // Track the visit and get visitor number
-      const visitorNumber = await trackVisitor();
-      if (visitorNumber) {
-        setCurrentVisitorNumber(visitorNumber);
-      }
+      // Track the visit
+      await trackVisitor();
 
       // Get total visitor count
       try {
@@ -46,11 +42,6 @@ const Footer = () => {
           </div>
           <div className="text-gray-400 text-sm text-center">
             Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
-            {currentVisitorNumber && (
-              <div className="text-xs mt-1">
-                You are visitor #{currentVisitorNumber}
-              </div>
-            )}
           </div>
           <div className="text-gray-400 text-sm text-right">
             {today}
