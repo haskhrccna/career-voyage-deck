@@ -28,13 +28,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    const client = new TwitterApi({
-      appKey: Deno.env.get('TWITTER_API_KEY')!,
-      appSecret: Deno.env.get('TWITTER_API_SECRET')!,
-      accessToken: Deno.env.get('TWITTER_ACCESS_TOKEN')!,
-      accessSecret: Deno.env.get('TWITTER_ACCESS_TOKEN_SECRET')!,
-    });
-
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { 
         status: 405,
@@ -52,23 +45,40 @@ Subject: ${subject}
 Message: ${message}
 CV Requested: ${requestCV ? 'Yes' : 'No'}`;
 
+    console.log('Creating Twitter client...');
+    const client = new TwitterApi({
+      appKey: Deno.env.get('TWITTER_API_KEY')!,
+      appSecret: Deno.env.get('TWITTER_API_SECRET')!,
+      accessToken: Deno.env.get('TWITTER_ACCESS_TOKEN')!,
+      accessSecret: Deno.env.get('TWITTER_ACCESS_TOKEN_SECRET')!,
+    });
+
     console.log('Attempting to send DM to user ID:', Deno.env.get('TWITTER_USER_ID'));
     
-    const result = await client.v2.sendDmToParticipant(
-      Deno.env.get('TWITTER_USER_ID')!,
-      { text: dmText }
-    );
-    
-    console.log('DM sent successfully:', result);
+    try {
+      // First verify credentials to ensure API access is working
+      const currentUser = await client.v2.me();
+      console.log('Successfully authenticated as Twitter user:', currentUser);
 
-    return new Response(
-      JSON.stringify({ message: 'Message sent successfully' }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
-  } catch (error) {
+      const result = await client.v2.sendDmToParticipant(
+        Deno.env.get('TWITTER_USER_ID')!,
+        { text: dmText }
+      );
+      
+      console.log('DM sent successfully:', result);
+
+      return new Response(
+        JSON.stringify({ message: 'Message sent successfully' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    } catch (twitterError: any) {
+      console.error('Twitter API Error:', twitterError);
+      throw new Error(`Twitter API Error: ${twitterError.message || 'Unknown error'}`);
+    }
+  } catch (error: any) {
     console.error('Error in send-twitter-dm function:', error);
     return new Response(
       JSON.stringify({ 
