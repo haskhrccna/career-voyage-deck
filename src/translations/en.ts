@@ -28,7 +28,7 @@ export const en = {
       position3: {
         title: "Project Manager",
         company: "AL BARRAK Electrical Cont.",
-        date: "2020",
+        date: "2020-2021",
         description: "Coordination with the stakeholders, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in Abu Dhabi UAE."
       },
       position4: {

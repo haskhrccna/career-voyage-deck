@@ -28,7 +28,7 @@ export const fr = {
       position3: {
         title: "Chef de Projet",
         company: "AL BARRAK Electrical Cont.",
-        date: "2020",
+        date: "2020-2021",
         description: "Coordination avec les parties prenantes, finalisation des autorisations requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé à Abu Dhabi, EAU."
       },
       position4: {
