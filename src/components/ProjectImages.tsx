@@ -1,8 +1,8 @@
 const IMAGES = [
-  "/cable-installation.jpg",    // Image of cable reel and workers
-  "/equipment-setup.jpg",       // Image of workers with equipment
-  "/concrete-blocks.jpg",       // Image of concrete blocks in trench
-  "/control-panel.jpg"         // Image of control panel installation
+  "/images/projects/cable-installation.jpg",    // Image of cable reel and workers
+  "/images/projects/equipment-setup.jpg",       // Image of workers with equipment
+  "/images/projects/concrete-blocks.jpg",       // Image of concrete blocks in trench
+  "/images/projects/control-panel.jpg"         // Image of control panel installation
 ];
 
 const ProjectImages = () => {
