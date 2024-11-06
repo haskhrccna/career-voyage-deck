@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
+import FormField from "./contact/FormField";
+import MessageField from "./contact/MessageField";
 
 const ContactForm = () => {
   const { t } = useLanguage();
@@ -48,7 +48,6 @@ const ContactForm = () => {
         description: "Thank you for your message. I'll get back to you soon!",
       });
 
-      // Reset form
       setFormData({
         name: "",
         email: "",
@@ -89,100 +88,72 @@ const ContactForm = () => {
         <div className="bg-slate-800 rounded-lg p-6 shadow-lg animate-fade-up">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-white">
-                  Name
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="bg-slate-700 border-slate-600 text-white"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-white">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="bg-slate-700 border-slate-600 text-white"
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="companyName" className="text-sm font-medium text-white">
-                Company Name
-              </label>
-              <Input
-                id="companyName"
-                name="companyName"
-                required
-                value={formData.companyName}
+              <FormField
+                label="Name"
+                id="name"
+                value={formData.name}
                 onChange={handleChange}
-                className="bg-slate-700 border-slate-600 text-white"
+                required
+                disabled={isSubmitting}
+              />
+              <FormField
+                label="Email"
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
                 disabled={isSubmitting}
               />
             </div>
-            <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-4">
-              <div className="space-y-2 md:w-1/2">
-                <label htmlFor="subject" className="text-sm font-medium text-white">
-                  Subject
-                </label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  required
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="bg-slate-700 border-slate-600 text-white"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="flex items-center space-x-2 md:pt-8">
-                <Checkbox
-                  id="requestCV"
-                  checked={formData.requestCV}
-                  onCheckedChange={handleCheckboxChange}
-                  className="data-[state=checked]:bg-purple-600"
-                  disabled={isSubmitting}
-                />
-                <label
-                  htmlFor="requestCV"
-                  className="text-sm font-medium leading-none text-white cursor-pointer"
-                >
-                  Request CV
-                </label>
-              </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                label="Subject"
+                id="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                disabled={isSubmitting}
+              />
+              <FormField
+                label="Company Name"
+                id="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                required
+                disabled={isSubmitting}
+              />
             </div>
+
+            <MessageField
+              value={formData.message}
+              onChange={handleChange}
+              disabled={isSubmitting}
+            />
+
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox
+                id="requestCV"
+                checked={formData.requestCV}
+                onCheckedChange={handleCheckboxChange}
+                className="w-6 h-6 data-[state=checked]:bg-purple-600"
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor="requestCV"
+                className="text-base font-medium leading-none text-white cursor-pointer"
+              >
+                Request CV
+              </label>
+            </div>
+
             {formData.requestCV && (
-              <div className="text-sm text-purple-400 italic">
+              <div className="text-base text-purple-400 italic">
                 You have asked for a copy of CV to be sent back
               </div>
             )}
-            <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium text-white">
-                Message
-              </label>
-              <Textarea
-                id="message"
-                name="message"
-                required
-                value={formData.message}
-                onChange={handleChange}
-                className="min-h-[150px] bg-slate-700 border-slate-600 text-white"
-                disabled={isSubmitting}
-              />
-            </div>
+
             <Button 
               type="submit" 
               className="w-full"
