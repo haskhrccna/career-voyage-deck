@@ -34,8 +34,13 @@ const Footer = () => {
           <div className="text-gray-400 text-sm">
             © {new Date().getFullYear()} Hassan Adam
           </div>
-          <div className="text-gray-400 text-sm text-center">
-            Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
+          <div className="flex flex-col items-center text-gray-400 text-sm">
+            <div>
+              Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
+            </div>
+            <div className="text-xs mt-1">
+              Last Updated Nov. 2024
+            </div>
           </div>
           <div className="text-gray-400 text-sm text-right">
             All Rights Reserved
