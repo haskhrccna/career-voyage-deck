@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
   const [visitorCount, setVisitorCount] = useState(0);
@@ -10,14 +11,21 @@ const Footer = () => {
   });
 
   useEffect(() => {
-    // Get the current count from localStorage
-    const currentCount = parseInt(localStorage.getItem('visitorCount') || '0');
-    // Increment the count
-    const newCount = currentCount + 1;
-    // Save back to localStorage
-    localStorage.setItem('visitorCount', newCount.toString());
-    // Update state
-    setVisitorCount(newCount);
+    const fetchVisitorCount = async () => {
+      try {
+        const { count } = await supabase
+          .from('visitors')
+          .select('*', { count: 'exact', head: true });
+
+        if (count !== null) {
+          setVisitorCount(count);
+        }
+      } catch (error) {
+        console.error('Error fetching visitor count:', error);
+      }
+    };
+
+    fetchVisitorCount();
   }, []);
 
   return (
