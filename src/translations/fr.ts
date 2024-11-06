@@ -16,7 +16,7 @@ export const fr = {
       position1: {
         title: "Ingénieur Résident Principal-Électrique",
         company: "AECOM Moyen-Orient",
-        date: "2024 - Présent",
+        date: "Mai 2024 - Oct 2024",
         description: "Travaux d'Infrastructure et d'Aménagement Paysager Al Noud (Al Khrair) Al Ain"
       },
       position2: {
