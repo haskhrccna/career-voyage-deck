@@ -5,12 +5,6 @@ import { trackVisitor } from '@/utils/visitorTracking';
 const Footer = () => {
   const [visitorCount, setVisitorCount] = useState(0);
 
-  const today = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-
   useEffect(() => {
     const initializeVisitor = async () => {
       // Track the visit
@@ -38,13 +32,13 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-3 items-center">
           <div className="text-gray-400 text-sm">
-            Last Updated on November 2024
+            © {new Date().getFullYear()} Hassan Adam
           </div>
           <div className="text-gray-400 text-sm text-center">
             Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
           </div>
           <div className="text-gray-400 text-sm text-right">
-            {today}
+            All Rights Reserved
           </div>
         </div>
       </div>
