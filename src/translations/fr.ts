@@ -5,7 +5,7 @@ export const fr = {
     skills: "Compétences"
   },
   hero: {
-    title: "Ingénieur Résident Principal",
+    title: "Ingénieur Résident Principal-Électrique",
     subtitle: "Spécialisé dans les systèmes électriques haute tension avec une vaste expérience dans la gestion et la supervision de projets d'infrastructure au Moyen-Orient",
     viewExperience: "Voir l'Expérience",
     requestCV: "Demander le CV"

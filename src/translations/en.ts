@@ -5,7 +5,7 @@ export const en = {
     skills: "Skills"
   },
   hero: {
-    title: "Principal Resident Engineer",
+    title: "Principal Resident Engineer-Electrical",
     subtitle: "Specialized in high-voltage power systems with extensive experience in managing and supervising infrastructure projects across the Middle East",
     viewExperience: "View Experience",
     requestCV: "Request CV"
