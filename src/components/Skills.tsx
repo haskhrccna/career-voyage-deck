@@ -46,7 +46,7 @@ const Skills = () => {
   return (
     <section id="skills" className="py-20 bg-slate-900">
       <div id="skills-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-16 text-white">{t('skills.title')}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-center mb-16 text-white">{t('skills.title')}</h2>
         
         <div className="space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -57,8 +57,8 @@ const Skills = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex justify-between mb-2">
-                  <span className="font-medium text-white">{skill.name}</span>
-                  <span className="text-blue-400">{skill.level}%</span>
+                  <span className="font-medium text-white text-sm">{skill.name}</span>
+                  <span className="text-blue-400 text-sm">{skill.level}%</span>
                 </div>
                 <Progress
                   value={animated ? skill.level : 0}
@@ -69,7 +69,7 @@ const Skills = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-bold text-center mb-8 text-white">{t('skills.itSkills.title')}</h3>
+            <h3 className="text-lg font-bold text-center mb-8 text-white">{t('skills.itSkills.title')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {itSkills.map((skill, index) => (
                 <div
@@ -78,8 +78,8 @@ const Skills = () => {
                   style={{ animationDelay: `${(index + skills.length) * 0.1}s` }}
                 >
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-white">{skill.name}</span>
-                    <span className="text-blue-400">{skill.level}%</span>
+                    <span className="font-medium text-white text-sm">{skill.name}</span>
+                    <span className="text-blue-400 text-sm">{skill.level}%</span>
                   </div>
                   <Progress
                     value={animated ? skill.level : 0}
