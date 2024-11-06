@@ -11,30 +11,39 @@ export type Database = {
     Tables: {
       contact_messages: {
         Row: {
+          city: string | null
           company_name: string
+          country: string | null
           created_at: string
           email: string
           id: string
+          ip_address: string | null
           message: string
           name: string
           request_cv: boolean | null
           subject: string
         }
         Insert: {
+          city?: string | null
           company_name: string
+          country?: string | null
           created_at?: string
           email: string
           id?: string
+          ip_address?: string | null
           message: string
           name: string
           request_cv?: boolean | null
           subject: string
         }
         Update: {
+          city?: string | null
           company_name?: string
+          country?: string | null
           created_at?: string
           email?: string
           id?: string
+          ip_address?: string | null
           message?: string
           name?: string
           request_cv?: boolean | null

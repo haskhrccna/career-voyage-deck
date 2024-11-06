@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Mail } from "lucide-react";
@@ -19,7 +19,30 @@ const ContactForm = () => {
     message: "",
     requestCV: false,
   });
+  const [locationData, setLocationData] = useState({
+    country: "",
+    city: "",
+    ip: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const getLocationData = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        setLocationData({
+          country: data.country_name,
+          city: data.city,
+          ip: data.ip,
+        });
+      } catch (error) {
+        console.error('Error fetching location:', error);
+      }
+    };
+
+    getLocationData();
+  }, []);
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -39,7 +62,10 @@ const ContactForm = () => {
           company_name: formData.companyName,
           subject: formData.subject,
           message: formData.message,
-          request_cv: formData.requestCV
+          request_cv: formData.requestCV,
+          country: locationData.country,
+          city: locationData.city,
+          ip_address: locationData.ip
         });
 
       if (dbError) throw dbError;
