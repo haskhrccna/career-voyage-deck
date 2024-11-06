@@ -107,21 +107,21 @@ const ContactForm = () => {
               disabled={isSubmitting}
               className="w-full"
             />
-            
-            <FormField
-              label="Subject"
-              id="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              required
-              disabled={isSubmitting}
-              className="w-full"
-            />
 
             <FormField
               label="Company Name"
               id="companyName"
               value={formData.companyName}
+              onChange={handleChange}
+              required
+              disabled={isSubmitting}
+              className="w-full"
+            />
+            
+            <FormField
+              label="Subject"
+              id="subject"
+              value={formData.subject}
               onChange={handleChange}
               required
               disabled={isSubmitting}
