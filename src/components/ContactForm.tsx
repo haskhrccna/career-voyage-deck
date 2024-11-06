@@ -87,44 +87,46 @@ const ContactForm = () => {
         </h2>
         <div className="bg-slate-800 rounded-lg p-6 shadow-lg animate-fade-up">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Name"
-                id="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
-              <FormField
-                label="Email"
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
+            <FormField
+              label="Name"
+              id="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              disabled={isSubmitting}
+              className="w-full"
+            />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Subject"
-                id="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
-              <FormField
-                label="Company Name"
-                id="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
+            <FormField
+              label="Email"
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              disabled={isSubmitting}
+              className="w-full"
+            />
+            
+            <FormField
+              label="Subject"
+              id="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              required
+              disabled={isSubmitting}
+              className="w-full"
+            />
+
+            <FormField
+              label="Company Name"
+              id="companyName"
+              value={formData.companyName}
+              onChange={handleChange}
+              required
+              disabled={isSubmitting}
+              className="w-full"
+            />
 
             <MessageField
               value={formData.message}
@@ -142,9 +144,9 @@ const ContactForm = () => {
               />
               <label
                 htmlFor="requestCV"
-                className="text-base font-medium leading-none text-white cursor-pointer"
+                className="text-lg font-medium leading-none text-white cursor-pointer"
               >
-                Request CV
+                Send request to receive CV copy
               </label>
             </div>
 
