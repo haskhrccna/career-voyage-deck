@@ -30,6 +30,21 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
+      // First, save to database
+      const { error: dbError } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          company_name: formData.companyName,
+          subject: formData.subject,
+          message: formData.message,
+          request_cv: formData.requestCV
+        });
+
+      if (dbError) throw dbError;
+
+      // Then, send email
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           name: formData.name,
