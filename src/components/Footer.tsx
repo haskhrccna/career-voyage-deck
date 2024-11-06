@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
   const [visitorCount, setVisitorCount] = useState(0);
-  const [lastVisitor, setLastVisitor] = useState<{
-    city?: string | null;
-    country?: string | null;
-  }>({});
 
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -15,29 +10,14 @@ const Footer = () => {
   });
 
   useEffect(() => {
-    const fetchVisitorData = async () => {
-      try {
-        // Get total count
-        const { count } = await supabase
-          .from('visitors')
-          .select('*', { count: 'exact', head: true });
-
-        // Get last visitor's location
-        const { data: lastVisitorData } = await supabase
-          .from('visitors')
-          .select('city, country')
-          .order('visited_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (count !== null) setVisitorCount(count);
-        if (lastVisitorData) setLastVisitor(lastVisitorData);
-      } catch (error) {
-        console.error('Error fetching visitor data:', error);
-      }
-    };
-
-    fetchVisitorData();
+    // Get the current count from localStorage
+    const currentCount = parseInt(localStorage.getItem('visitorCount') || '0');
+    // Increment the count
+    const newCount = currentCount + 1;
+    // Save back to localStorage
+    localStorage.setItem('visitorCount', newCount.toString());
+    // Update state
+    setVisitorCount(newCount);
   }, []);
 
   return (
@@ -49,11 +29,6 @@ const Footer = () => {
           </div>
           <div className="text-gray-400 text-sm text-center">
             Site Visitors: <span className="font-bold text-white">{visitorCount}</span>
-            {lastVisitor.city && lastVisitor.country && (
-              <div className="text-xs mt-1">
-                Last visitor from: {lastVisitor.city}, {lastVisitor.country}
-              </div>
-            )}
           </div>
           <div className="text-gray-400 text-sm text-right">
             {today}
