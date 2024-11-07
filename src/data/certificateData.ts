@@ -9,7 +9,7 @@ export const pmpCertification: Certificate = {
   id: 2,
   title: "PMP",
   date: "June 2023",
-  imageUrl: "/images/certificates/pmp-cert.jpg"
+  imageUrl: "/images/certifications/pmp-cert.jpg"
 };
 
 export const otherCertifications: Certificate[] = [
@@ -35,7 +35,7 @@ export const otherCertifications: Certificate[] = [
     id: 5,
     title: "Cisco Certified DevNet Associate",
     date: "Jan 2022",
-    imageUrl: "/images/certificates/cisco-dev-cert.png"
+    imageUrl: "/images/certifications/cisco-dev-cert.png"
   },
   {
     id: 6,
@@ -47,12 +47,12 @@ export const otherCertifications: Certificate[] = [
     id: 7,
     title: "PCAP – Certified Associate in Python Programming",
     date: "Sep 2021",
-    imageUrl: "/images/certificates/pcap-cert.jpg"
+    imageUrl: "/images/certifications/pcap-cert.jpg"
   },
   {
     id: 8,
     title: "MCSE (Microsoft Certified Systems Engineer)",
     date: "2001",
-    imageUrl: "/images/certificates/mcse-cert.png"
+    imageUrl: "/images/certifications/mcse-cert.png"
   }
 ];
