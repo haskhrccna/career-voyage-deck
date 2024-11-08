@@ -1,110 +1,81 @@
 export const en = {
-  nav: {
-    home: "Home",
-    experience: "Experience",
-    skills: "Skills"
-  },
   hero: {
-    title: "Principal Resident Engineer-Electrical",
-    subtitle: "Specialized in high-voltage power systems with extensive experience in managing and supervising infrastructure projects across the Middle East",
-    viewExperience: "View Experience",
-    requestCV: "Request CV"
+    title: "Welcome to My Portfolio",
+    description: "Showcasing my professional journey and skills.",
   },
-  experience: {
-    title: "Professional Journey",
-    positions: {
-      position0: {
-        title: "Principal Resident Engineer-Electrical",
-        company: "AtkinsRéalis",
-        date: "Nov 2024 - Present",
-        description: "400kV OHTL transmission line upgrade including but not limited to Engineering, procurement and construction including design, manufacturing, FAT, insurance, packing, shipping, delivery to site, installation, testing, commissioning and handing over in satisfactory condition of works."
-      },
-      position1: {
-        title: "Principal Resident Engineer-Electrical",
-        company: "AECOM Middle East",
-        date: "May 2024 - Oct 2024",
-        description: "Installation of 33kV primary substations, switching station and 11kV cables and related substations, Installation of street light network with all related works, testing and commissioning of 33/11 kV Cables, transformers and switch gear."
-      },
-      position2: {
-        title: "Project Manager",
-        company: "Mott MacDonald Consultant",
-        date: "2022",
-        description: "Coordination with EtihadWE (previously FEWA) and main contractors in all aspects for smooth project execution as per client standard/specification, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in North, Central, West and East area in UAE."
-      },
-      position3: {
-        title: "Project Manager",
-        company: "AL BARRAK Electrical Cont.",
-        date: "2020-2021",
-        description: "Coordination with the stakeholders, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in Abu Dhabi UAE."
-      },
-      position4: {
-        title: "Project Manager",
-        company: "Furukawa Electrical Co.",
-        date: "2016-2019",
-        description: "Design & supervision and practice of electrical engineering on installation, testing and commissioning of HV/EHV power Cables, and FO cable works for power transmission & distribution system as per standards and regulations for 400kV EHV cable projects based in Doha, Qatar."
-      },
-      position5: {
-        title: "Project Manager Electrical Works",
-        company: "KEO International Consultants",
-        date: "2012-2016",
-        description: "Design & supervision on MV/LV electrical installation works for infrastructure and Highway roads projects and, testing and commissioning, project based in Doha, Qatar."
-      },
-      position6: {
-        title: "Project Manager",
-        company: "EXSYM Corporation",
-        date: "2008-2012",
-        description: "Construction supervision, technical/commercial evaluations for bidders' offers, design review and tendering of 132kV/220kV/400kV EHV cable projects based in Doha, Qatar."
-      },
-      position7: {
-        title: "Project Engineer",
-        company: "EXSYM Corporation",
-        date: "Dec 2005 - Dec 2007",
-        description: "Managing all site activities, site team, and subcontractors' works for 132kV cable installation projects, including supervision of installation processes and coordination of technical requirements."
-      },
-      position8: {
-        title: "Cable Maintenance Engineer",
-        company: "Ministry of Electricity and Water (MEW) Kuwait",
-        date: "Nov 2002 – Nov 2005",
-        description: "Supervised cable activities including excavation, laying, and jointing. Managed subcontractors, prepared safety permits, monitored progress, and supervised high voltage testing for 33kV-300kV cables. Responsible for fault location, repair activities, and switching operations across substations."
-      },
-      position9: {
-        title: "Cable Maintenance Engineer",
-        company: "Kahromica Company, Kuwait",
-        date: "Sep 2001 – Nov 2002",
-        description: "Supervised cable activities including excavation, laying, and jointing. Managed cable works and subcontractors. Responsible for oil-filled cable fault location, repair activities, and pilot cable fault locating and repairs."
-      },
-      position10: {
-        title: "Electrical Maintenance Engineer",
-        company: "High Voltage Equipment – Egyptian Army",
-        date: "1998-2000",
-        description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage equipment, ensuring compliance with Egyptian standards."
-      },
-      position11: {
-        title: "B.Sc. Electronics Engineering",
-        company: "Mansoura University, Egypt",
-        date: "May 1997",
-        description: "Bachelor of Science degree in Electronics Engineering"
-      }
+  skills: {
+    title: "Skills",
+    description: "A summary of my technical skills and expertise.",
+  },
+  timeline: {
+    title: "Experience & Education",
+    position1: {
+      title: "Senior Network Engineer",
+      company: "Telecom Egypt",
+      date: "2019-Present",
+      description: "Leading and managing network infrastructure projects. Designing and implementing network solutions. Providing technical guidance and mentoring to team members."
+    },
+    position2: {
+      title: "Network Team Leader",
+      company: "Telecom Egypt",
+      date: "2015-2019",
+      description: "Supervised a team of network engineers. Managed network infrastructure and security. Implemented network solutions and resolved complex technical issues."
+    },
+    position3: {
+      title: "Network Engineer",
+      company: "Telecom Egypt",
+      date: "2012-2015",
+      description: "Maintained network infrastructure and implemented solutions. Resolved technical issues and provided support. Collaborated with team members on projects."
+    },
+    position4: {
+      title: "IT Manager",
+      company: "Elsewedy Electric T&D",
+      date: "2010-2012",
+      description: "Managed IT infrastructure and systems. Led IT projects and implementations. Provided technical support and training to staff."
+    },
+    position5: {
+      title: "Network Administrator",
+      company: "Elsewedy Electric T&D",
+      date: "2008-2010",
+      description: "Administered network systems and infrastructure. Implemented security measures and provided support. Managed user accounts and access controls."
+    },
+    position6: {
+      title: "IT Specialist",
+      company: "Elsewedy Electric T&D",
+      date: "2006-2008",
+      description: "Provided IT support and maintained systems. Implemented solutions and resolved technical issues. Assisted with network administration tasks."
+    },
+    position7: {
+      title: "Network Engineer",
+      company: "Egyptian Armed Forces",
+      date: "2003-2006",
+      description: "Managed military network infrastructure. Implemented secure communication solutions. Provided technical support and training."
+    },
+    position8: {
+      title: "Communication Engineer",
+      company: "Egyptian Armed Forces",
+      date: "2000-2003",
+      description: "Maintained communication systems and equipment. Implemented security protocols and provided support. Trained personnel on system operations."
+    },
+    position9: {
+      title: "Electrical Maintenance Engineer",
+      company: "High Voltage Equipment – Egyptian Army",
+      date: "1998-2000",
+      description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage equipment, ensuring compliance with Egyptian standards."
+    },
+    position11: {
+      title: "B.Sc. Electronics Engineering",
+      company: "Military Technical College",
+      date: "1994-1999",
+      description: "Bachelor's degree in Electronics Engineering with focus on communication systems and networks."
     }
   },
   certifications: {
-    title: "Professional Certifications"
+    title: "Certifications",
+    description: "A list of my professional certifications.",
   },
-  skills: {
-    title: "Skills & Expertise",
-    items: {
-      projectManagement: "Project Management",
-      constructionSupervision: "Construction Supervision",
-      powerTransmission: "Power Transmission (up to 400kV)",
-      infrastructureDesign: "Infrastructure Design",
-      tenderManagement: "Tender Management"
-    },
-    itSkills: {
-      title: "IT Skills",
-      microsoftOffice: "Microsoft Office",
-      pythonProgramming: "Python Programming",
-      networking: "Networking",
-      linux: "Linux"
-    }
+  contact: {
+    title: "Contact Me",
+    description: "Get in touch for any inquiries or collaborations.",
   }
 };
