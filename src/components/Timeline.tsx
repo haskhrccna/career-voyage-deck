@@ -122,7 +122,7 @@ const Timeline = () => {
                         <img
                           src={experience.images[currentImageIndex]}
                           alt={experience.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-opacity duration-1000 animate-cross-fade"
                         />
                       </div>
                     ) : null}
