@@ -55,10 +55,10 @@ const config = {
       },
       keyframes: {
         "morph": {
-          "0%": { transform: "scale(1) rotate(0deg)" },
-          "33%": { transform: "scale(1.1) rotate(2deg)" },
-          "66%": { transform: "scale(1.05) rotate(-2deg)" },
-          "100%": { transform: "scale(1) rotate(0deg)" }
+          "0%": { transform: "scale(1)" },
+          "33%": { transform: "scale(1.1)" },
+          "66%": { transform: "scale(1.05)" },
+          "100%": { transform: "scale(1)" }
         },
         "fade-up": {
           "0%": {
