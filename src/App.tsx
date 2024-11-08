@@ -11,13 +11,21 @@ import Contact from "./pages/Contact";
 import { useEffect } from "react";
 import { trackVisitor } from "./utils/visitorTracking";
 
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 const AppContent = () => {
   const location = useLocation();
 
   useEffect(() => {
-    trackVisitor();
+    trackVisitor().catch(console.error);
   }, [location.pathname]);
 
   return (
@@ -33,16 +41,19 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+// Wrap the entire app with necessary providers
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <LanguageProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </LanguageProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
