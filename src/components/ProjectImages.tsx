@@ -50,15 +50,15 @@ const ProjectImages = () => {
                     alt={`Construction project phase ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
+                  <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-1 rounded-full text-sm">
+                    {index + 1} / {IMAGES.length}
+                  </div>
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
-          <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-            {currentSlide} / {totalSlides}
-          </div>
         </Carousel>
       </div>
     </section>
