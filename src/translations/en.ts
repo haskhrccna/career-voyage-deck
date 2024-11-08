@@ -56,24 +56,30 @@ export const en = {
         description: "Construction supervision, technical/commercial evaluations for bidders' offers, design review and tendering of 132kV/220kV/400kV EHV cable projects based in Doha, Qatar."
       },
       position7: {
+        title: "Project Engineer",
+        company: "EXSYM Corporation",
+        date: "Dec 2005 - Dec 2007",
+        description: "1. Preparing all contracts from preliminary discussion to finalizing scope and final contract documents.\n2. Preparing detailed scope of work for subcontractor quotations.\n3. Negotiating with subcontractors about prices and SOW.\n4. Coordinating all necessary requirements to complete subcontractors' scope of work.\n5. Supervising and controlling all subcontractor works."
+      },
+      position8: {
         title: "Cable Maintenance Engineer",
         company: "Ministry of Electricity and Water (MEW) Kuwait",
         date: "Nov 2002 – Nov 2005",
         description: "Supervised cable activities including excavation, laying, and jointing. Managed subcontractors, prepared safety permits, monitored progress, and supervised high voltage testing for 33kV-300kV cables. Responsible for fault location, repair activities, and switching operations across substations."
       },
-      position8: {
+      position9: {
         title: "Cable Maintenance Engineer",
         company: "Kahromica Company, Kuwait",
         date: "Sep 2001 – Nov 2002",
         description: "Supervised cable activities including excavation, laying, and jointing. Managed cable works and subcontractors. Responsible for oil-filled cable fault location, repair activities, and pilot cable fault locating and repairs."
       },
-      position9: {
+      position10: {
         title: "Electrical Maintenance Engineer",
         company: "High Voltage Equipment – Egyptian Army",
         date: "1998-2000",
         description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage networks across multiple stadium projects in Egypt, ensuring compliance with contract and Egyptian standards."
       },
-      position10: {
+      position11: {
         title: "B.Sc. Electronics Engineering",
         company: "Mansoura University, Egypt",
         date: "May 1997",
