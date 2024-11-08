@@ -20,7 +20,7 @@ const Timeline = () => {
       setCurrentImageIndex((prevIndex) => 
         prevIndex === aecomImages.length - 1 ? 0 : prevIndex + 1
       );
-    }, 8000); // Increased from 5000ms to 8000ms for a slower, more comfortable transition
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
