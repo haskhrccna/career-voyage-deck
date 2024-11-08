@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Contact from "./pages/Contact";
 import { useEffect } from "react";
 import { trackVisitor } from "./utils/visitorTracking";
+import React from 'react';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -44,15 +45,17 @@ const AppContent = () => {
 // Wrap the entire app with necessary providers
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <LanguageProvider>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </LanguageProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <LanguageProvider>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </LanguageProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 
