@@ -5,6 +5,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useCarousel } from "@/components/ui/carousel/carousel-context";
 
 const IMAGES = [
   "/images/projects/cable-installation.jpg",
@@ -17,6 +18,15 @@ const IMAGES = [
   "/images/projects/33swg.jpg",
   "/images/projects/33tr.jpg"
 ];
+
+const ImageCounter = () => {
+  const { currentSlide, totalSlides } = useCarousel();
+  return (
+    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+      {currentSlide} / {totalSlides}
+    </div>
+  );
+};
 
 const ProjectImages = () => {
   return (
@@ -39,6 +49,7 @@ const ProjectImages = () => {
                     alt={`Construction project phase ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
+                  <ImageCounter />
                 </div>
               </CarouselItem>
             ))}
