@@ -111,11 +111,7 @@ const Timeline = () => {
                         group relative
                         before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
                         after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-t after:from-transparent after:via-white/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500"
-                      onMouseEnter={() => {
-                        const audio = new Audio('/hover-sound.mp3');
-                        audio.volume = 0.2;
-                        audio.play().catch(console.error);
-                      }}
+                      onMouseEnter={playHoverSound}
                     >
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
