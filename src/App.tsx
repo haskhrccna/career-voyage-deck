@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Contact from "./pages/Contact";
 import { useEffect } from "react";
 import { trackVisitor } from "./utils/visitorTracking";
+import { toast } from "@/components/ui/use-toast";
 import React from 'react';
 
 // Create a client
@@ -26,7 +27,20 @@ const AppContent = () => {
   const location = useLocation();
 
   useEffect(() => {
-    trackVisitor().catch(console.error);
+    const handleVisitorTracking = async () => {
+      try {
+        await trackVisitor();
+      } catch (error) {
+        console.error('Failed to track visitor:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong. Please try again later.",
+        });
+      }
+    };
+
+    handleVisitorTracking();
   }, [location.pathname]);
 
   return (
