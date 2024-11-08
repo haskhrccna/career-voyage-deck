@@ -99,15 +99,15 @@ const Timeline = () => {
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rounded-full" />
                 <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800 hover:bg-slate-700 transition-colors duration-300`}>
                   <div className="relative overflow-hidden">
-                    <div className="p-6">
+                    <button 
+                      className="w-full text-left p-6 transform transition-all duration-200 hover:scale-105 group"
+                      onMouseEnter={() => playHoverSound()}
+                    >
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
                         {experience.date}
                       </div>
-                      <h3 
-                        className="text-xl font-semibold mb-2 text-white transform transition-all duration-200 hover:scale-105 hover:text-blue-400 cursor-pointer"
-                        onMouseEnter={() => playHoverSound()}
-                      >
+                      <h3 className="text-xl font-semibold mb-2 text-white group-hover:text-blue-400">
                         {experience.title}
                       </h3>
                       <div className="flex items-center text-blue-400 mb-4">
@@ -117,7 +117,7 @@ const Timeline = () => {
                       {experience.description && (
                         <p className="text-gray-300 text-sm leading-relaxed">{experience.description}</p>
                       )}
-                    </div>
+                    </button>
                   </div>
                 </Card>
               </div>
