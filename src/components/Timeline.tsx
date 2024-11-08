@@ -100,8 +100,12 @@ const Timeline = () => {
                 <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800 hover:bg-slate-700 transition-colors duration-300`}>
                   <div className="relative overflow-hidden">
                     <button 
-                      className="w-full text-left p-6 transform transition-all duration-200 hover:scale-105 group"
-                      onMouseEnter={() => playHoverSound()}
+                      className="w-full text-left p-6 transform transition-all duration-200 hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg active:translate-y-[1px] group"
+                      onMouseEnter={() => {
+                        const audio = new Audio('/hover-sound.mp3');
+                        audio.volume = 0.2;
+                        audio.play().catch(console.error);
+                      }}
                     >
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
