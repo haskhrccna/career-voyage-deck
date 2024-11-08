@@ -23,7 +23,7 @@ export const fr = {
         title: "Chef de Projet",
         company: "Mott MacDonald Consultant",
         date: "2022",
-        description: "Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux pour les projets d'infrastructure électrique aux EAU. Gestion de la conformité des conceptions, de la sécurité électrique et de l'exécution des projets dans les zones Nord, Centre, Ouest et Est."
+        description: "Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux dans tous les aspects pour une exécution fluide du projet selon les normes/spécifications du client, finalisation des autorisations NOC requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé dans les zones Nord, Centre, Ouest et Est des EAU."
       },
       position3: {
         title: "Chef de Projet",
@@ -53,7 +53,7 @@ export const fr = {
         title: "Ingénieur de Maintenance des Câbles",
         company: "Ministère de l'Électricité et de l'Eau (MEW) Koweït",
         date: "Nov 2002 – Nov 2005",
-        description: "Supervision des activités de câblage, y compris l'excavation, la pose et le raccordement. Gestion des sous-traitants, préparation des permis de sécurité, suivi des progrès et supervision des tests à haute tension pour les câbles 33kV-300kV. Responsable de la localisation des défauts, des activités de réparation et des opérations de commutation à travers les sous-stations."
+        description: "Supervision des activités de câblage, y compris l'excavation, la pose et le raccordement. Gestion des sous-traitants, préparation des permis de sécurité, suivi des progrès et supervision des tests à haute tension pour les câbles 33kV-300kV. Responsable de la localisation des défauts, des activités de réparation et des opérations de commutation."
       },
       position8: {
         title: "Ingénieur de Maintenance des Câbles",
