@@ -17,7 +17,7 @@ export const fr = {
         title: "Ingénieur Résident Principal-Électrique",
         company: "AtkinsRéalis",
         date: "Nov 2024 - Présent",
-        description: "Mise à niveau de la ligne de transmission OHTL 400kV comprenant l'ingénierie, l'approvisionnement et la construction, y compris la conception, la fabrication, les tests FAT, l'assurance, l'emballage, l'expédition, la livraison sur site, l'installation, les tests, la mise en service et la remise en état satisfaisant des travaux."
+        description: "Mise à niveau de la ligne de transmission OHTL 400kV comprenant l'ingénierie, l'approvisionnement et la construction, y compris la conception, la fabrication, les tests FAT, l'assurance, l'emballage, l'expédition, la livraison sur site, l'installation, les tests, la mise en service et la remise en état satisfaisant des travaux. Abu Dhabi, Émirats Arabes Unis"
       },
       position1: {
         title: "Ingénieur Résident Principal-Électrique",
