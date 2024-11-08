@@ -59,7 +59,7 @@ export const en = {
         title: "Project Engineer",
         company: "EXSYM Corporation",
         date: "Dec 2005 - Dec 2007",
-        description: "1. Preparing all contracts from preliminary discussion to finalizing scope and final contract documents.\n2. Preparing detailed scope of work for subcontractor quotations.\n3. Negotiating with subcontractors about prices and SOW.\n4. Coordinating all necessary requirements to complete subcontractors' scope of work.\n5. Supervising and controlling all subcontractor works."
+        description: "Managing all site activities, site team, and subcontractors' works for 132kV cable installation projects, including supervision of installation processes and coordination of technical requirements."
       },
       position8: {
         title: "Cable Maintenance Engineer",

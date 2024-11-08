@@ -53,7 +53,7 @@ export const fr = {
         title: "Ingénieur de Maintenance des Câbles",
         company: "Ministère de l'Électricité et de l'Eau (MEW) Koweït",
         date: "Nov 2002 – Nov 2005",
-        description: "Supervision des activités de câblage, y compris l'excavation, la pose et le raccordement. Gestion des sous-traitants, préparation des permis de sécurité, suivi des progrès et supervision des tests à haute tension pour les câbles 33kV-300kV. Responsable de la localisation des défauts, des activités de réparation et des opérations de commutation."
+        description: "Gestion de toutes les activités du site, de l'équipe et des travaux des sous-traitants pour les projets d'installation de câbles 132kV, incluant la supervision des processus d'installation et la coordination des exigences techniques."
       },
       position8: {
         title: "Ingénieur de Maintenance des Câbles",
