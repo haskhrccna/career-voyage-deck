@@ -1,7 +1,6 @@
 import { Briefcase, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { playHoverSound } from '@/utils/audio';
 
 const Timeline = () => {
   const { t } = useLanguage();
@@ -95,7 +94,6 @@ const Timeline = () => {
                   index % 2 === 0 ? 'justify-start' : 'justify-end'
                 } animate-fade-up`}
                 style={{ animationDelay: `${index * 0.2}s` }}
-                onMouseEnter={playHoverSound}
               >
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-purple-500 rounded-full shadow-lg shadow-purple-500/50" />
                 <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800/50 hover:bg-slate-700/50 transition-colors duration-300`}>
