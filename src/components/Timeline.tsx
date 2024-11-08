@@ -106,7 +106,11 @@ const Timeline = () => {
                         hover:scale-[1.02] hover:translate-y-[-4px] active:translate-y-[1px]
                         shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2),0_8px_20px_-4px_rgba(0,0,0,0.5)] 
                         bg-gradient-to-br from-slate-800 to-slate-900
-                        group"
+                        hover:from-slate-700 hover:to-slate-800
+                        hover:bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from),_var(--tw-gradient-to))]
+                        group relative
+                        before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
+                        after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-t after:from-transparent after:via-white/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500"
                       onMouseEnter={() => {
                         const audio = new Audio('/hover-sound.mp3');
                         audio.volume = 0.2;
