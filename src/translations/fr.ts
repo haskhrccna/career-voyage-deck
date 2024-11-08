@@ -23,7 +23,7 @@ export const fr = {
         title: "Ingénieur Résident Principal-Électrique",
         company: "AECOM Moyen-Orient",
         date: "Mai 2024 - Oct 2024",
-        description: "Travaux d'infrastructure et d'aménagement paysager Al Noud, y compris l'installation de postes primaires 33kV, poste de commutation et câbles 11kV et postes associés, Installation du réseau d'éclairage public avec tous les travaux connexes, tests et mise en service des câbles 33/11 kV, transformateurs et appareillage de commutation."
+        description: "Travaux d'infrastructure et d'aménagement paysager Al Noud, y compris l'installation de postes primaires 33kV, poste de commutation et câbles 11kV et postes associés, Installation du réseau d'éclairage public avec tous les travaux connexes, tests et mise en service des câbles 33/11 kV, transformateurs et appareillage de commutation. Al Ain, Émirats Arabes Unis"
       },
       position2: {
         title: "Chef de Projet",
