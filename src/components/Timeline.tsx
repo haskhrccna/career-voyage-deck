@@ -1,29 +1,9 @@
 import { Briefcase, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useState, useEffect } from 'react';
 
 const Timeline = () => {
   const { t } = useLanguage();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const aecomImages = [
-    "/images/experience/aecom/11swg.jpg",
-    "/images/experience/aecom/11tr.jpg",
-    "/images/experience/aecom/33cable.jpg",
-    "/images/experience/aecom/33swg.jpg",
-    "/images/experience/aecom/33tr.jpg"
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
-        prevIndex === aecomImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const experiences = [
     {
@@ -32,7 +12,6 @@ const Timeline = () => {
       company: t('experience.positions.position1.company'),
       date: t('experience.positions.position1.date'),
       description: t('experience.positions.position1.description'),
-      images: aecomImages
     },
     {
       id: 2,
@@ -54,7 +33,6 @@ const Timeline = () => {
       company: t('experience.positions.position4.company'),
       date: t('experience.positions.position4.date'),
       description: t('experience.positions.position4.description'),
-      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
     },
     {
       id: 5,
@@ -62,7 +40,6 @@ const Timeline = () => {
       company: t('experience.positions.position5.company'),
       date: t('experience.positions.position5.date'),
       description: t('experience.positions.position5.description'),
-      image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780"
     },
     {
       id: 6,
@@ -70,7 +47,6 @@ const Timeline = () => {
       company: t('experience.positions.position6.company'),
       date: t('experience.positions.position6.date'),
       description: t('experience.positions.position6.description'),
-      image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789"
     },
     {
       id: 7,
@@ -78,7 +54,6 @@ const Timeline = () => {
       company: t('experience.positions.position7.company'),
       date: t('experience.positions.position7.date'),
       description: t('experience.positions.position7.description'),
-      image: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5"
     },
     {
       id: 8,
@@ -86,7 +61,6 @@ const Timeline = () => {
       company: t('experience.positions.position8.company'),
       date: t('experience.positions.position8.date'),
       description: t('experience.positions.position8.description'),
-      image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789"
     },
     {
       id: 9,
@@ -94,7 +68,6 @@ const Timeline = () => {
       company: t('experience.positions.position9.company'),
       date: t('experience.positions.position9.date'),
       description: t('experience.positions.position9.description'),
-      image: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5"
     },
     {
       id: 10,
@@ -102,7 +75,6 @@ const Timeline = () => {
       company: t('experience.positions.position10.company'),
       date: t('experience.positions.position10.date'),
       description: t('experience.positions.position10.description'),
-      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1"
     }
   ];
 
@@ -126,23 +98,6 @@ const Timeline = () => {
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rounded-full" />
                 <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800 hover:bg-slate-700 transition-colors duration-300`}>
                   <div className="relative overflow-hidden">
-                    {experience.images ? (
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={experience.images[currentImageIndex]}
-                          alt={experience.title}
-                          className="w-full h-full object-cover transition-opacity duration-1000 animate-cross-fade"
-                        />
-                      </div>
-                    ) : experience.image ? (
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={experience.image}
-                          alt={experience.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : null}
                     <div className="p-6">
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
