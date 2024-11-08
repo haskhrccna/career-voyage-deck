@@ -55,6 +55,9 @@ const Navigation = () => {
               <Link to="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 {t('nav.home')}
               </Link>
+              <a href="#experience" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                {t('nav.experience')}
+              </a>
               <a href="#skills" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 {t('nav.skills')}
               </a>
@@ -99,6 +102,9 @@ const Navigation = () => {
             <Link to="/" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
               {t('nav.home')}
             </Link>
+            <a href="#experience" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
+              {t('nav.experience')}
+            </a>
             <a href="#skills" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors">
               {t('nav.skills')}
             </a>
