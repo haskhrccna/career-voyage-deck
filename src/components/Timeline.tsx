@@ -11,6 +11,7 @@ const Timeline = () => {
       title: t('experience.positions.position1.title'),
       company: t('experience.positions.position1.company'),
       date: t('experience.positions.position1.date'),
+      description: t('experience.positions.position1.description'),
       image: "https://images.unsplash.com/photo-1518770660439-4636190af475"
     },
     {
@@ -109,10 +110,13 @@ const Timeline = () => {
                         {experience.date}
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-white">{experience.title}</h3>
-                      <div className="flex items-center text-blue-400">
+                      <div className="flex items-center text-blue-400 mb-2">
                         <Briefcase className="w-4 h-4 mr-2" />
                         {experience.company}
                       </div>
+                      {experience.description && (
+                        <p className="text-gray-300 text-sm">{experience.description}</p>
+                      )}
                     </div>
                   </div>
                 </Card>
