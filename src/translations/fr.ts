@@ -35,7 +35,7 @@ export const fr = {
         title: "Chef de Projet",
         company: "Furukawa Electrical Co.",
         date: "2016-2019",
-        description: "Conception & supervision et pratique de l'ingénierie électrique dans l'installation, le test et la mise en service des câbles HV/EHV, et des travaux de câbles FO pour le système de transmission et de distribution d'énergie selon les normes et règlements pour les projets de câbles EHV 400kV basés à Doha, Qatar."
+        description: "Conception & supervision et pratique de l'ingénierie électrique dans l'installation, le test et la mise en service des câbles HV/EHV, et des travaux de câbles FO pour le système de transmission et de distribution d'énergie selon les normes et règlements à Doha, Qatar."
       },
       position5: {
         title: "Chef de Projet des Travaux Électriques",

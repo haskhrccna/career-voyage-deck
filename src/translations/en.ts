@@ -41,7 +41,7 @@ export const en = {
         title: "Project Manager",
         company: "Furukawa Electrical Co.",
         date: "2016-2019",
-        description: "Design & supervision and practice of electrical engineering on installation, testing and commissioning of 400kV / 132kV EHV power Cables, and FO cable works for power transmission & distribution system as per standards and regulations for 400kV EHV cable projects based in Doha, Qatar."
+        description: "Design & supervision and practice of electrical engineering on installation, testing and commissioning of 400kV / 132kV EHV power Cables, and FO cable works for power transmission & distribution system as per standards and regulations in Doha, Qatar."
       },
       position5: {
         title: "Project Manager Electrical Works",
