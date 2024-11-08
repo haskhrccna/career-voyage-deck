@@ -53,19 +53,12 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+        "morph": {
+          "0%": { transform: "scale(1) rotate(0deg)" },
+          "33%": { transform: "scale(1.1) rotate(2deg)" },
+          "66%": { transform: "scale(1.05) rotate(-2deg)" },
+          "100%": { transform: "scale(1) rotate(0deg)" }
         },
         "fade-up": {
           "0%": {
@@ -81,35 +74,11 @@ const config = {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        "gradient-xy": {
-          "0%, 100%": {
-            "background-size": "400% 400%",
-            "background-position": "left center"
-          },
-          "50%": {
-            "background-size": "200% 200%",
-            "background-position": "right center"
-          }
-        },
-        "morph": {
-          "0%": { 
-            "border-radius": "60% 40% 30% 70%/60% 30% 70% 40%",
-          },
-          "50%": { 
-            "border-radius": "30% 60% 70% 40%/50% 60% 30% 60%",
-          },
-          "100%": { 
-            "border-radius": "60% 40% 30% 70%/60% 30% 70% 40%",
-          }
-        }
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        "morph": "morph 5s ease-in-out infinite",
         "fade-up": "fade-up 0.5s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
-        "gradient-xy": "gradient-xy 15s ease infinite",
-        "morph": "morph 8s ease-in-out infinite",
       },
     },
   },

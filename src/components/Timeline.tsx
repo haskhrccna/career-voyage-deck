@@ -20,7 +20,7 @@ const Timeline = () => {
       setCurrentImageIndex((prevIndex) => 
         prevIndex === aecomImages.length - 1 ? 0 : prevIndex + 1
       );
-    }, 3000); // Change image every 3 seconds
+    }, 5000); // Changed to 5 seconds for a more comfortable viewing experience
 
     return () => clearInterval(interval);
   }, []);
@@ -122,7 +122,7 @@ const Timeline = () => {
                         <img
                           src={experience.images[currentImageIndex]}
                           alt={experience.title}
-                          className="w-full h-full object-cover animate-morph"
+                          className="w-full h-full object-cover transition-transform duration-700 animate-morph"
                         />
                       </div>
                     ) : null}
