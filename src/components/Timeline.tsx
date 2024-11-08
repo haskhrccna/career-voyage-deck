@@ -95,6 +95,7 @@ const Timeline = () => {
                   index % 2 === 0 ? 'justify-start' : 'justify-end'
                 } animate-fade-up`}
                 style={{ animationDelay: `${index * 0.2}s` }}
+                onMouseEnter={playHoverSound}
               >
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rounded-full" />
                 <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800 hover:bg-slate-700 transition-colors duration-300`}>
@@ -111,7 +112,6 @@ const Timeline = () => {
                         group relative
                         before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
                         after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-t after:from-transparent after:via-white/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500"
-                      onMouseEnter={playHoverSound}
                     >
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
