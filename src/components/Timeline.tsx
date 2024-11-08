@@ -100,7 +100,13 @@ const Timeline = () => {
                 <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800 hover:bg-slate-700 transition-colors duration-300`}>
                   <div className="relative overflow-hidden">
                     <button 
-                      className="w-full text-left p-6 transform transition-all duration-200 hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg active:translate-y-[1px] group"
+                      className="w-full text-left p-6 transform transition-all duration-300 
+                        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-1000
+                        after:absolute after:inset-0 after:bg-gradient-to-b after:from-white/10 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300
+                        hover:scale-[1.02] hover:translate-y-[-4px] active:translate-y-[1px]
+                        shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2),0_8px_20px_-4px_rgba(0,0,0,0.5)] 
+                        bg-gradient-to-br from-slate-800 to-slate-900
+                        group"
                       onMouseEnter={() => {
                         const audio = new Audio('/hover-sound.mp3');
                         audio.volume = 0.2;
