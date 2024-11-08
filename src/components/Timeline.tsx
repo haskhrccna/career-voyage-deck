@@ -104,7 +104,7 @@ const Timeline = () => {
                       className="w-full text-left p-6 transform transition-all duration-300 
                         bg-gradient-to-br from-slate-800/90 to-slate-900/90
                         hover:from-purple-900/20 hover:to-slate-800/90
-                        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-purple-500/10 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-1000
+                        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-purple-500/10 before:to-transparent before:animate-spark-repeat
                         after:absolute after:inset-0 after:bg-gradient-to-b after:from-purple-500/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300
                         hover:scale-[1.02] hover:translate-y-[-8px] active:translate-y-[2px]
                         shadow-[inset_0_0_0_1px_rgba(168,85,247,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(168,85,247,0.4),0_16px_40px_-8px_rgba(168,85,247,0.2)]
