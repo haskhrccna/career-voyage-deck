@@ -5,7 +5,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useCarousel } from "@/components/ui/carousel/carousel-context";
 import { useEffect, useState } from "react";
 
 const IMAGES = [
@@ -21,6 +20,15 @@ const IMAGES = [
 ];
 
 const ProjectImages = () => {
+  const [currentSlide, setCurrentSlide] = useState(1);
+  const [totalSlides, setTotalSlides] = useState(IMAGES.length);
+
+  const handleSlideChange = (api: any) => {
+    if (!api) return;
+    setCurrentSlide(api.selectedScrollSnap() + 1);
+    setTotalSlides(api.scrollSnapList().length);
+  };
+
   return (
     <section className="min-h-[30vh] bg-slate-800 p-8">
       <div className="max-w-7xl mx-auto">
@@ -31,6 +39,7 @@ const ProjectImages = () => {
             loop: true,
           }}
           className="w-full relative"
+          onSelect={handleSlideChange}
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {IMAGES.map((src, index) => (
@@ -48,40 +57,11 @@ const ProjectImages = () => {
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
           <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-            <SlideCounter />
+            {currentSlide} / {totalSlides}
           </div>
         </Carousel>
       </div>
     </section>
-  );
-};
-
-const SlideCounter = () => {
-  const { api } = useCarousel();
-  const [currentSlide, setCurrentSlide] = useState(1);
-  const [totalSlides, setTotalSlides] = useState(0);
-
-  useEffect(() => {
-    if (!api) return;
-    
-    const onSelect = () => {
-      setCurrentSlide(api.selectedScrollSnap() + 1);
-      setTotalSlides(api.scrollSnapList().length);
-    };
-
-    api.on("select", onSelect);
-    api.on("reInit", onSelect);
-    onSelect();
-
-    return () => {
-      api.off("select", onSelect);
-    };
-  }, [api]);
-
-  if (!api) return null;
-
-  return (
-    <>{currentSlide} / {totalSlides}</>
   );
 };
 
