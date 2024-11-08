@@ -1,6 +1,7 @@
 import { Briefcase, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { playHoverSound } from '@/utils/audio';
 
 const Timeline = () => {
   const { t } = useLanguage();
@@ -103,7 +104,12 @@ const Timeline = () => {
                         <Calendar className="w-4 h-4 mr-2" />
                         {experience.date}
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-white">{experience.title}</h3>
+                      <h3 
+                        className="text-xl font-semibold mb-2 text-white transform transition-all duration-200 hover:scale-105 hover:text-blue-400 cursor-pointer"
+                        onMouseEnter={() => playHoverSound()}
+                      >
+                        {experience.title}
+                      </h3>
                       <div className="flex items-center text-blue-400 mb-4">
                         <Briefcase className="w-4 h-4 mr-2" />
                         {experience.company}
