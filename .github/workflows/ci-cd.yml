@@ -10,6 +10,21 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: portfolio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - uses: actions/checkout@v3
     
@@ -25,8 +40,8 @@ jobs:
     - name: Build
       run: npm run build
       
-    - name: Build Docker image
-      run: docker build -t portfolio-app .
+    - name: Build Docker Compose
+      run: docker-compose build
       
     # Add this step if you want to push to a container registry
     # - name: Login to Container Registry
