@@ -46,15 +46,15 @@ const AppContent = () => {
 const App = () => {
   return (
     <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <LanguageProvider>
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
             <BrowserRouter>
               <AppContent />
             </BrowserRouter>
-          </LanguageProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </LanguageProvider>
     </React.StrictMode>
   );
 };
