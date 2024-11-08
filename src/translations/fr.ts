@@ -23,7 +23,7 @@ export const fr = {
         title: "Chef de Projet",
         company: "Mott MacDonald Consultant",
         date: "2022",
-        description: "Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux dans tous les aspects pour une exécution fluide du projet selon les normes/spécifications du client, finalisation des autorisations NOC requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé dans les zones Nord, Centre, Ouest et Est des EAU."
+        description: "Travaux de fourniture et d'installation de câbles/lignes aériennes 132kV, Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux dans tous les aspects pour une exécution fluide du projet selon les normes/spécifications du client, finalisation des autorisations NOC requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé dans les zones Nord, Centre, Ouest et Est des EAU."
       },
       position2: {
         title: "Chef de Projet",
