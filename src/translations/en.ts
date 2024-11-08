@@ -17,13 +17,13 @@ export const en = {
         title: "Principal Resident Engineer-Electrical",
         company: "AECOM Middle East",
         date: "May 2024 - Oct 2024",
-        description: "Installation of 33kV primary substations, switching station and 11kV cables and related substations, Installation of street light network with all related works."
+        description: "Installation of 33kV primary substations, switching station and 11kV cables and related substations, Installation of street light network with all related works, testing and commissioning of 33/11 kV Cables, transformers and switch gear."
       },
       position2: {
         title: "Project Manager",
         company: "Mott MacDonald Consultant",
         date: "2022",
-        description: "Coordinated with EtihadWE (previously FEWA) and main contractors for power infrastructure projects across UAE. Managed design compliance, electrical safety, and project execution in North, Central, West and East areas."
+        description: "Coordination with EtihadWE (previously FEWA) and main contractors in all aspects for smooth project execution as per client standard/specification, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in North, Central, West and East area in UAE."
       },
       position3: {
         title: "Project Manager",
