@@ -54,12 +54,6 @@ const config = {
         },
       },
       keyframes: {
-        "morph": {
-          "0%": { transform: "scale(1)" },
-          "33%": { transform: "scale(1.1)" },
-          "66%": { transform: "scale(1.05)" },
-          "100%": { transform: "scale(1)" }
-        },
         "fade-up": {
           "0%": {
             opacity: "0",
@@ -76,7 +70,6 @@ const config = {
         },
       },
       animation: {
-        "morph": "morph 5s ease-in-out infinite",
         "fade-up": "fade-up 0.5s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
       },
