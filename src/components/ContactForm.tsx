@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import FormField from "./contact/FormField";
 import MessageField from "./contact/MessageField";
+import FormHeader from "./contact/FormHeader";
+import FormSubmitButton from "./contact/FormSubmitButton";
 
 const ContactForm = () => {
   const { t } = useLanguage();
@@ -53,7 +53,6 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
-      // First, save to database
       const { error: dbError } = await supabase
         .from('contact_messages')
         .insert({
@@ -70,8 +69,7 @@ const ContactForm = () => {
 
       if (dbError) throw dbError;
 
-      // Then, send email
-      const { data, error } = await supabase.functions.invoke('send-email', {
+      const { error } = await supabase.functions.invoke('send-email', {
         body: {
           name: formData.name,
           email: formData.email,
@@ -116,16 +114,10 @@ const ContactForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setFormData((prev) => ({ ...prev, requestCV: checked }));
-  };
-
   return (
     <section id="contact" className="py-20 bg-slate-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-white">
-          Contact
-        </h2>
+        <FormHeader />
         <div className="bg-slate-800 rounded-lg p-6 shadow-lg animate-fade-up">
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormField
@@ -175,36 +167,25 @@ const ContactForm = () => {
               disabled={isSubmitting}
             />
 
-            <div className="flex items-center space-x-2 mt-4">
+            <div className="flex items-center space-x-2 mt-4 opacity-50">
               <Checkbox
                 id="requestCV"
                 checked={formData.requestCV}
-                onCheckedChange={handleCheckboxChange}
+                disabled={true}
                 className="w-6 h-6 data-[state=checked]:bg-purple-600"
-                disabled={isSubmitting}
               />
               <label
                 htmlFor="requestCV"
-                className="text-lg font-medium leading-none text-white cursor-pointer"
+                className="text-lg font-medium leading-none text-white cursor-not-allowed"
               >
                 Send request to receive CV copy
               </label>
             </div>
 
-            {formData.requestCV && (
-              <div className="text-base text-purple-400 italic">
-                You have asked for a copy of CV to be sent back
-              </div>
-            )}
-
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={!isValidEmail(formData.email) || isSubmitting}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              {isSubmitting ? "Sending..." : "Send Message"}
-            </Button>
+            <FormSubmitButton 
+              isSubmitting={isSubmitting}
+              isDisabled={!isValidEmail(formData.email)}
+            />
           </form>
         </div>
       </div>
