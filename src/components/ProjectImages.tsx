@@ -47,7 +47,9 @@ const ProjectImages = () => {
           </CarouselContent>
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
-          <SlideCounter />
+          <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+            <SlideCounter />
+          </div>
         </Carousel>
       </div>
     </section>
@@ -79,9 +81,7 @@ const SlideCounter = () => {
   if (!api) return null;
 
   return (
-    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-      {currentSlide} / {totalSlides}
-    </div>
+    <>{currentSlide} / {totalSlides}</>
   );
 };
 
