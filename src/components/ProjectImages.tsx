@@ -6,6 +6,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useCarousel } from "@/components/ui/carousel/carousel-context";
+import { useEffect, useState } from "react";
 
 const IMAGES = [
   "/images/projects/cable-installation.jpg",
@@ -53,11 +54,29 @@ const ProjectImages = () => {
   );
 };
 
-// Move the counter inside the same file and rename it to avoid confusion
 const SlideCounter = () => {
   const { api } = useCarousel();
-  const currentSlide = api ? api.selectedScrollSnap() + 1 : 0;
-  const totalSlides = api ? api.scrollSnapList().length : 0;
+  const [currentSlide, setCurrentSlide] = useState(1);
+  const [totalSlides, setTotalSlides] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+    
+    const onSelect = () => {
+      setCurrentSlide(api.selectedScrollSnap() + 1);
+      setTotalSlides(api.scrollSnapList().length);
+    };
+
+    api.on("select", onSelect);
+    api.on("reInit", onSelect);
+    onSelect();
+
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api]);
+
+  if (!api) return null;
 
   return (
     <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
