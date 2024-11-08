@@ -55,15 +55,15 @@ const AppContent = () => {
 // Wrap the entire app with necessary providers
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <LanguageProvider>
+    <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <BrowserRouter>
             <AppContent />
-          </LanguageProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </LanguageProvider>
   );
 };
 
