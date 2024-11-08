@@ -19,15 +19,6 @@ const IMAGES = [
   "/images/projects/33tr.jpg"
 ];
 
-const ImageCounter = () => {
-  const { currentSlide, totalSlides } = useCarousel();
-  return (
-    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-      {currentSlide} / {totalSlides}
-    </div>
-  );
-};
-
 const ProjectImages = () => {
   return (
     <section className="min-h-[30vh] bg-slate-800 p-8">
@@ -38,7 +29,7 @@ const ProjectImages = () => {
             align: "start",
             loop: true,
           }}
-          className="w-full"
+          className="w-full relative"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {IMAGES.map((src, index) => (
@@ -49,16 +40,29 @@ const ProjectImages = () => {
                     alt={`Construction project phase ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                  <ImageCounter />
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
+          <SlideCounter />
         </Carousel>
       </div>
     </section>
+  );
+};
+
+// Move the counter inside the same file and rename it to avoid confusion
+const SlideCounter = () => {
+  const { api } = useCarousel();
+  const currentSlide = api ? api.selectedScrollSnap() + 1 : 0;
+  const totalSlides = api ? api.scrollSnapList().length : 0;
+
+  return (
+    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+      {currentSlide} / {totalSlides}
+    </div>
   );
 };
 

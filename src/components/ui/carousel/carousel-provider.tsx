@@ -23,23 +23,23 @@ const CarouselProvider = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
-        loop: true, // Enable smooth looping
+        loop: true,
       },
       plugins
     )
     const [canScrollPrev, setCanScrollPrev] = React.useState(false)
     const [canScrollNext, setCanScrollNext] = React.useState(false)
-    const [currentSlide, setCurrentSlide] = React.useState(0)
+    const [currentSlide, setCurrentSlide] = React.useState(1)
     const [totalSlides, setTotalSlides] = React.useState(0)
 
-    const onSelect = React.useCallback((api: typeof api) => {
+    const onSelect = React.useCallback(() => {
       if (!api) return
 
       setCanScrollPrev(api.canScrollPrev())
       setCanScrollNext(api.canScrollNext())
       setCurrentSlide(api.selectedScrollSnap() + 1)
       setTotalSlides(api.scrollSnapList().length)
-    }, [])
+    }, [api])
 
     const scrollPrev = React.useCallback(() => {
       api?.scrollPrev()
@@ -49,19 +49,6 @@ const CarouselProvider = React.forwardRef<
       api?.scrollNext()
     }, [api])
 
-    const handleKeyDown = React.useCallback(
-      (event: React.KeyboardEvent<HTMLDivElement>) => {
-        if (event.key === "ArrowLeft") {
-          event.preventDefault()
-          scrollPrev()
-        } else if (event.key === "ArrowRight") {
-          event.preventDefault()
-          scrollNext()
-        }
-      },
-      [scrollPrev, scrollNext]
-    )
-
     React.useEffect(() => {
       if (!api || !setApi) return
       setApi(api)
@@ -70,12 +57,12 @@ const CarouselProvider = React.forwardRef<
     React.useEffect(() => {
       if (!api) return
 
-      onSelect(api)
+      onSelect()
       api.on("reInit", onSelect)
       api.on("select", onSelect)
 
       return () => {
-        api?.off("select", onSelect)
+        api.off("select", onSelect)
       }
     }, [api, onSelect])
 
@@ -83,7 +70,7 @@ const CarouselProvider = React.forwardRef<
       <CarouselContext.Provider
         value={{
           carouselRef,
-          api: api,
+          api,
           opts,
           orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
           scrollPrev,
@@ -96,7 +83,6 @@ const CarouselProvider = React.forwardRef<
       >
         <div
           ref={ref}
-          onKeyDownCapture={handleKeyDown}
           className={cn("relative", className)}
           role="region"
           aria-roledescription="carousel"

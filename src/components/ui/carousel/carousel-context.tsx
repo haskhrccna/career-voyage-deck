@@ -1,7 +1,7 @@
 import * as React from "react"
-import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react"
+import useEmblaCarousel, { type UseEmblaCarouselType, EmblaCarouselType } from "embla-carousel-react"
 
-type CarouselApi = UseEmblaCarouselType[1]
+type CarouselApi = EmblaCarouselType | null
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
 type CarouselOptions = UseCarouselParameters[0]
 type CarouselPlugin = UseCarouselParameters[1]
@@ -15,7 +15,7 @@ type CarouselProps = {
 
 type CarouselContextProps = {
   carouselRef: ReturnType<typeof useEmblaCarousel>[0]
-  api: ReturnType<typeof useEmblaCarousel>[1]
+  api: CarouselApi
   scrollPrev: () => void
   scrollNext: () => void
   canScrollPrev: boolean
@@ -26,7 +26,7 @@ type CarouselContextProps = {
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
-export function useCarousel() {
+function useCarousel() {
   const context = React.useContext(CarouselContext)
   if (!context) {
     throw new Error("useCarousel must be used within a <Carousel />")
@@ -34,4 +34,9 @@ export function useCarousel() {
   return context
 }
 
-export { type CarouselApi, type CarouselProps, CarouselContext }
+export { 
+  type CarouselApi, 
+  type CarouselProps, 
+  CarouselContext,
+  useCarousel 
+}
