@@ -10,14 +10,19 @@ const Footer = () => {
       // Track the visit
       await trackVisitor();
 
-      // Get total visitor count
+      // Get total visitor count based on visitor_number sequence
       try {
-        const { count } = await supabase
+        const { data, error } = await supabase
           .from('visitors')
-          .select('*', { count: 'exact', head: true });
+          .select('visitor_number')
+          .order('visitor_number', { ascending: false })
+          .limit(1)
+          .single();
 
-        if (count !== null) {
-          setVisitorCount(count);
+        if (error) throw error;
+        
+        if (data) {
+          setVisitorCount(data.visitor_number);
         }
       } catch (error) {
         console.error('Error fetching visitor count:', error);
