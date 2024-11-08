@@ -13,6 +13,12 @@ export const fr = {
   experience: {
     title: "Parcours Professionnel",
     positions: {
+      position0: {
+        title: "Ingénieur Résident Principal-Électrique",
+        company: "AtkinsRéalis",
+        date: "Nov 2024 - Présent",
+        description: "Mise à niveau de la ligne de transmission OHTL 400kV comprenant l'ingénierie, l'approvisionnement et la construction, y compris la conception, la fabrication, les tests FAT, l'assurance, l'emballage, l'expédition, la livraison sur site, l'installation, les tests, la mise en service et la remise en état satisfaisant des travaux."
+      },
       position1: {
         title: "Ingénieur Résident Principal-Électrique",
         company: "AECOM Moyen-Orient",
@@ -23,7 +29,7 @@ export const fr = {
         title: "Chef de Projet",
         company: "Mott MacDonald Consultant",
         date: "2022",
-        description: "Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux dans tous les aspects pour une exécution fluide du projet selon les normes/spécifications du client, finalisation des autorisations NOC requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé dans les zones Nord, Centre, Ouest et Est des EAU."
+        description: "Fourniture et installation de câbles et lignes aériennes 132kV, Coordination avec EtihadWE (anciennement FEWA) et les entrepreneurs principaux dans tous les aspects pour une exécution fluide du projet selon les normes/spécifications du client, finalisation des autorisations NOC requises auprès des autorités locales, exécution des projets d'infrastructure électrique, garantie de la conception correcte, de la conformité, de la sécurité électrique et assurance d'un environnement de travail plus fluide, projet basé dans les zones Nord, Centre, Ouest et Est des EAU."
       },
       position3: {
         title: "Chef de Projet",
