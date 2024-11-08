@@ -104,23 +104,23 @@ const Timeline = () => {
                         before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-1000
                         after:absolute after:inset-0 after:bg-gradient-to-b after:from-white/10 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300
                         hover:scale-[1.02] hover:translate-y-[-8px] active:translate-y-[2px]
-                        shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2),0_16px_40px_-8px_rgba(0,0,0,0.5)] 
+                        shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(168,85,247,0.4),0_16px_40px_-8px_rgba(168,85,247,0.2)] 
                         bg-gradient-to-br from-slate-800 to-slate-900
-                        hover:from-purple-900/50 hover:to-slate-800
+                        hover:from-slate-700/90 hover:to-slate-800
                         hover:bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from),_var(--tw-gradient-to))]
                         group relative
-                        before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-purple-400/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
-                        after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-t after:from-transparent after:via-purple-400/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500"
+                        before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
+                        after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-t after:from-transparent after:via-white/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500"
                       onMouseEnter={playHoverSound}
                     >
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
                         {experience.date}
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-white group-hover:text-purple-400">
+                      <h3 className="text-xl font-semibold mb-2 text-white">
                         {experience.title}
                       </h3>
-                      <div className="flex items-center text-purple-400 mb-4">
+                      <div className="flex items-center text-blue-400 mb-4">
                         <Briefcase className="w-4 h-4 mr-2" />
                         {experience.company}
                       </div>
