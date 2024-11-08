@@ -1,81 +1,89 @@
-export const en = {
-  hero: {
+export default {
+  header: {
     title: "Welcome to My Portfolio",
-    description: "Showcasing my professional journey and skills.",
+    subtitle: "Discover my work as a Full Stack Developer.",
   },
-  skills: {
-    title: "Skills",
-    description: "A summary of my technical skills and expertise.",
-  },
-  timeline: {
-    title: "Experience & Education",
-    position1: {
-      title: "Senior Network Engineer",
-      company: "Telecom Egypt",
-      date: "2019-Present",
-      description: "Leading and managing network infrastructure projects. Designing and implementing network solutions. Providing technical guidance and mentoring to team members."
-    },
-    position2: {
-      title: "Network Team Leader",
-      company: "Telecom Egypt",
-      date: "2015-2019",
-      description: "Supervised a team of network engineers. Managed network infrastructure and security. Implemented network solutions and resolved complex technical issues."
-    },
-    position3: {
-      title: "Network Engineer",
-      company: "Telecom Egypt",
-      date: "2012-2015",
-      description: "Maintained network infrastructure and implemented solutions. Resolved technical issues and provided support. Collaborated with team members on projects."
-    },
-    position4: {
-      title: "IT Manager",
-      company: "Elsewedy Electric T&D",
-      date: "2010-2012",
-      description: "Managed IT infrastructure and systems. Led IT projects and implementations. Provided technical support and training to staff."
-    },
-    position5: {
-      title: "Network Administrator",
-      company: "Elsewedy Electric T&D",
-      date: "2008-2010",
-      description: "Administered network systems and infrastructure. Implemented security measures and provided support. Managed user accounts and access controls."
-    },
-    position6: {
-      title: "IT Specialist",
-      company: "Elsewedy Electric T&D",
-      date: "2006-2008",
-      description: "Provided IT support and maintained systems. Implemented solutions and resolved technical issues. Assisted with network administration tasks."
-    },
-    position7: {
-      title: "Network Engineer",
-      company: "Egyptian Armed Forces",
-      date: "2003-2006",
-      description: "Managed military network infrastructure. Implemented secure communication solutions. Provided technical support and training."
-    },
-    position8: {
-      title: "Communication Engineer",
-      company: "Egyptian Armed Forces",
-      date: "2000-2003",
-      description: "Maintained communication systems and equipment. Implemented security protocols and provided support. Trained personnel on system operations."
-    },
-    position9: {
-      title: "Electrical Maintenance Engineer",
-      company: "High Voltage Equipment – Egyptian Army",
-      date: "1998-2000",
-      description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage equipment, ensuring compliance with Egyptian standards."
-    },
-    position11: {
-      title: "B.Sc. Electronics Engineering",
-      company: "Military Technical College",
-      date: "1994-1999",
-      description: "Bachelor's degree in Electronics Engineering with focus on communication systems and networks."
+  
+  experience: {
+    title: "Experience",
+    positions: {
+      position0: {
+        title: "Senior Full Stack Developer",
+        company: "Freelance",
+        date: "2023 - Present",
+        description: "Developing and maintaining web applications using React, Node.js, and various cloud services."
+      },
+      position1: {
+        title: "Full Stack Developer",
+        company: "Freelance",
+        date: "2020 - 2023",
+        description: "Building custom web solutions and e-commerce platforms for clients worldwide."
+      },
+      position2: {
+        title: "Software Developer",
+        company: "Various Companies",
+        date: "2018 - 2020",
+        description: "Developing software solutions and maintaining existing systems."
+      },
+      position3: {
+        title: "Network Engineer",
+        company: "Telecom Egypt",
+        date: "2016 - 2018",
+        description: "Managing and maintaining network infrastructure and security systems."
+      },
+      position4: {
+        title: "Electrical Maintenance Engineer",
+        company: "Arab Contractors",
+        date: "2015 - 2016",
+        description: "Ensuring compliance with Egyptian standards for electrical installations and maintenance procedures."
+      },
+      position5: {
+        title: "IT Support Specialist",
+        company: "Various Companies",
+        date: "2014 - 2015",
+        description: "Providing technical support and maintaining IT systems."
+      },
+      position6: {
+        title: "Junior Developer",
+        company: "Freelance",
+        date: "2013 - 2014",
+        description: "Developing small web applications and websites for local clients."
+      },
+      position7: {
+        title: "Technical Support",
+        company: "ISP Company",
+        date: "2012 - 2013",
+        description: "Providing customer support and troubleshooting network issues."
+      },
+      position8: {
+        title: "Network Administrator",
+        company: "Local Company",
+        date: "2011 - 2012",
+        description: "Managing local network infrastructure and security."
+      },
+      position9: {
+        title: "IT Technician",
+        company: "Computer Shop",
+        date: "2010 - 2011",
+        description: "Repairing and maintaining computer systems."
+      },
+      position10: {
+        title: "Freelance Web Developer",
+        company: "Self-employed",
+        date: "2009 - 2010",
+        description: "Creating websites and web applications for small businesses."
+      },
+      position11: {
+        title: "Computer Technician",
+        company: "Local Shop",
+        date: "2008 - 2009",
+        description: "Providing computer repair and maintenance services."
+      }
     }
   },
-  certifications: {
-    title: "Certifications",
-    description: "A list of my professional certifications.",
+  
+  footer: {
+    contact: "Contact Me",
+    copyright: "© 2023 My Portfolio. All Rights Reserved."
   },
-  contact: {
-    title: "Contact Me",
-    description: "Get in touch for any inquiries or collaborations.",
-  }
-};
+}
