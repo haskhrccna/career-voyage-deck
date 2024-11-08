@@ -1,4 +1,4 @@
-export const en = {
+const en = {
   nav: {
     home: "Home",
     experience: "Experience",
@@ -77,7 +77,7 @@ export const en = {
         title: "Electrical Maintenance Engineer",
         company: "High Voltage Equipment – Egyptian Army",
         date: "1998-2000",
-        description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage equipment, ensuring compliance with Egyptian standards."
+        description: "Ensuring compliance with Egyptian standards for electrical installations and maintenance procedures."
       },
       position11: {
         title: "B.Sc. Electronics Engineering",
@@ -108,3 +108,5 @@ export const en = {
     }
   }
 };
+
+export default en;
