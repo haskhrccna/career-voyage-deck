@@ -47,7 +47,7 @@ export const en = {
         title: "Project Manager Electrical Works",
         company: "KEO International Consultants",
         date: "2012-2016",
-        description: "Design & supervision on MV/LV electrical installation works for infrastructure and Highway roads projects and, testing and commissioning, project based in Doha, Qatar."
+        description: "Design & supervision on 132kV / 11kV and street light network installation works for infrastructure and Highway roads projects and, testing and commissioning, project based in Doha, Qatar."
       },
       position6: {
         title: "Project Manager",
