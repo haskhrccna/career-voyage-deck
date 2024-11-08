@@ -82,6 +82,13 @@ const Timeline = () => {
       company: t('experience.positions.position10.company'),
       date: t('experience.positions.position10.date'),
       description: t('experience.positions.position10.description'),
+    },
+    {
+      id: 11,
+      title: t('experience.positions.position11.title'),
+      company: t('experience.positions.position11.company'),
+      date: t('experience.positions.position11.date'),
+      description: t('experience.positions.position11.description'),
     }
   ];
 
