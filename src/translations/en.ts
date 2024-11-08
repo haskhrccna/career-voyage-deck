@@ -77,7 +77,7 @@ export const en = {
         title: "Electrical Maintenance Engineer",
         company: "High Voltage Equipment – Egyptian Army",
         date: "1998-2000",
-        description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage networks across multiple stadium projects in Egypt, ensuring compliance with contract and Egyptian standards."
+        description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage equipment, ensuring compliance with contract and Egyptian standards."
       },
       position11: {
         title: "B.Sc. Electronics Engineering",
