@@ -1,89 +1,110 @@
-export default {
-  header: {
-    title: "Welcome to My Portfolio",
-    subtitle: "Discover my work as a Full Stack Developer.",
+export const en = {
+  nav: {
+    home: "Home",
+    experience: "Experience",
+    skills: "Skills"
   },
-  
+  hero: {
+    title: "Principal Resident Engineer-Electrical",
+    subtitle: "Specialized in high-voltage power systems with extensive experience in managing and supervising infrastructure projects across the Middle East",
+    viewExperience: "View Experience",
+    requestCV: "Request CV"
+  },
   experience: {
-    title: "Experience",
+    title: "Professional Journey",
     positions: {
       position0: {
-        title: "Senior Full Stack Developer",
-        company: "Freelance",
-        date: "2023 - Present",
-        description: "Developing and maintaining web applications using React, Node.js, and various cloud services."
+        title: "Principal Resident Engineer-Electrical",
+        company: "AtkinsRéalis",
+        date: "Nov 2024 - Present",
+        description: "400kV OHTL transmission line upgrade including but not limited to Engineering, procurement and construction including design, manufacturing, FAT, insurance, packing, shipping, delivery to site, installation, testing, commissioning and handing over in satisfactory condition of works."
       },
       position1: {
-        title: "Full Stack Developer",
-        company: "Freelance",
-        date: "2020 - 2023",
-        description: "Building custom web solutions and e-commerce platforms for clients worldwide."
+        title: "Principal Resident Engineer-Electrical",
+        company: "AECOM Middle East",
+        date: "May 2024 - Oct 2024",
+        description: "Installation of 33kV primary substations, switching station and 11kV cables and related substations, Installation of street light network with all related works, testing and commissioning of 33/11 kV Cables, transformers and switch gear."
       },
       position2: {
-        title: "Software Developer",
-        company: "Various Companies",
-        date: "2018 - 2020",
-        description: "Developing software solutions and maintaining existing systems."
+        title: "Project Manager",
+        company: "Mott MacDonald Consultant",
+        date: "2022",
+        description: "Coordination with EtihadWE (previously FEWA) and main contractors in all aspects for smooth project execution as per client standard/specification, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in North, Central, West and East area in UAE."
       },
       position3: {
-        title: "Network Engineer",
-        company: "Telecom Egypt",
-        date: "2016 - 2018",
-        description: "Managing and maintaining network infrastructure and security systems."
+        title: "Project Manager",
+        company: "AL BARRAK Electrical Cont.",
+        date: "2020-2021",
+        description: "Coordination with the stakeholders, finalizing the required NOC from local authorities, executing power infrastructure projects, ensuring correct design, compliance, electrical safety and ensuring a more trouble-free work environment, project based in Abu Dhabi UAE."
       },
       position4: {
-        title: "Electrical Maintenance Engineer",
-        company: "Arab Contractors",
-        date: "2015 - 2016",
-        description: "Ensuring compliance with Egyptian standards for electrical installations and maintenance procedures."
+        title: "Project Manager",
+        company: "Furukawa Electrical Co.",
+        date: "2016-2019",
+        description: "Design & supervision and practice of electrical engineering on installation, testing and commissioning of HV/EHV power Cables, and FO cable works for power transmission & distribution system as per standards and regulations for 400kV EHV cable projects based in Doha, Qatar."
       },
       position5: {
-        title: "IT Support Specialist",
-        company: "Various Companies",
-        date: "2014 - 2015",
-        description: "Providing technical support and maintaining IT systems."
+        title: "Project Manager Electrical Works",
+        company: "KEO International Consultants",
+        date: "2012-2016",
+        description: "Design & supervision on MV/LV electrical installation works for infrastructure and Highway roads projects and, testing and commissioning, project based in Doha, Qatar."
       },
       position6: {
-        title: "Junior Developer",
-        company: "Freelance",
-        date: "2013 - 2014",
-        description: "Developing small web applications and websites for local clients."
+        title: "Project Manager",
+        company: "EXSYM Corporation",
+        date: "2008-2012",
+        description: "Construction supervision, technical/commercial evaluations for bidders' offers, design review and tendering of 132kV/220kV/400kV EHV cable projects based in Doha, Qatar."
       },
       position7: {
-        title: "Technical Support",
-        company: "ISP Company",
-        date: "2012 - 2013",
-        description: "Providing customer support and troubleshooting network issues."
+        title: "Project Engineer",
+        company: "EXSYM Corporation",
+        date: "Dec 2005 - Dec 2007",
+        description: "Managing all site activities, site team, and subcontractors' works for 132kV cable installation projects, including supervision of installation processes and coordination of technical requirements."
       },
       position8: {
-        title: "Network Administrator",
-        company: "Local Company",
-        date: "2011 - 2012",
-        description: "Managing local network infrastructure and security."
+        title: "Cable Maintenance Engineer",
+        company: "Ministry of Electricity and Water (MEW) Kuwait",
+        date: "Nov 2002 – Nov 2005",
+        description: "Supervised cable activities including excavation, laying, and jointing. Managed subcontractors, prepared safety permits, monitored progress, and supervised high voltage testing for 33kV-300kV cables. Responsible for fault location, repair activities, and switching operations across substations."
       },
       position9: {
-        title: "IT Technician",
-        company: "Computer Shop",
-        date: "2010 - 2011",
-        description: "Repairing and maintaining computer systems."
+        title: "Cable Maintenance Engineer",
+        company: "Kahromica Company, Kuwait",
+        date: "Sep 2001 – Nov 2002",
+        description: "Supervised cable activities including excavation, laying, and jointing. Managed cable works and subcontractors. Responsible for oil-filled cable fault location, repair activities, and pilot cable fault locating and repairs."
       },
       position10: {
-        title: "Freelance Web Developer",
-        company: "Self-employed",
-        date: "2009 - 2010",
-        description: "Creating websites and web applications for small businesses."
+        title: "Electrical Maintenance Engineer",
+        company: "High Voltage Equipment – Egyptian Army",
+        date: "1998-2000",
+        description: "Controlled equipment operation and supervised regular maintenance. Provided training for new staff members. Supervised electrical works for low, medium, and high voltage equipment, ensuring compliance with Egyptian standards."
       },
       position11: {
-        title: "Computer Technician",
-        company: "Local Shop",
-        date: "2008 - 2009",
-        description: "Providing computer repair and maintenance services."
+        title: "B.Sc. Electronics Engineering",
+        company: "Mansoura University, Egypt",
+        date: "May 1997",
+        description: "Bachelor of Science degree in Electronics Engineering"
       }
     }
   },
-  
-  footer: {
-    contact: "Contact Me",
-    copyright: "© 2023 My Portfolio. All Rights Reserved."
+  certifications: {
+    title: "Professional Certifications"
   },
-}
+  skills: {
+    title: "Skills & Expertise",
+    items: {
+      projectManagement: "Project Management",
+      constructionSupervision: "Construction Supervision",
+      powerTransmission: "Power Transmission (up to 400kV)",
+      infrastructureDesign: "Infrastructure Design",
+      tenderManagement: "Tender Management"
+    },
+    itSkills: {
+      title: "IT Skills",
+      microsoftOffice: "Microsoft Office",
+      pythonProgramming: "Python Programming",
+      networking: "Networking",
+      linux: "Linux"
+    }
+  }
+};
