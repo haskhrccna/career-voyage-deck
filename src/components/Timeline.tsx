@@ -1,9 +1,29 @@
 import { Briefcase, Calendar } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useState, useEffect } from 'react';
 
 const Timeline = () => {
   const { t } = useLanguage();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const aecomImages = [
+    "/images/experience/aecom/11swg.jpg",
+    "/images/experience/aecom/11tr.jpg",
+    "/images/experience/aecom/33cable.jpg",
+    "/images/experience/aecom/33swg.jpg",
+    "/images/experience/aecom/33tr.jpg"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === aecomImages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const experiences = [
     {
@@ -12,21 +32,19 @@ const Timeline = () => {
       company: t('experience.positions.position1.company'),
       date: t('experience.positions.position1.date'),
       description: t('experience.positions.position1.description'),
-      image: "https://images.unsplash.com/photo-1518770660439-4636190af475"
+      images: aecomImages
     },
     {
       id: 2,
       title: t('experience.positions.position2.title'),
       company: t('experience.positions.position2.company'),
       date: t('experience.positions.position2.date'),
-      image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
     },
     {
       id: 3,
       title: t('experience.positions.position3.title'),
       company: t('experience.positions.position3.company'),
       date: t('experience.positions.position3.date'),
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
     },
     {
       id: 4,
@@ -80,8 +98,8 @@ const Timeline = () => {
   ];
 
   return (
-    <section id="experience" className="py-10 bg-slate-800">
-      <div className="sticky top-0 bg-slate-800/90 px-6 py-3 z-50">
+    <section id="experience" className="py-10 bg-slate-900">
+      <div className="sticky top-0 bg-slate-900/90 backdrop-blur-sm px-6 py-3 z-50">
         <h2 className="text-2xl md:text-3xl font-bold text-center text-white">{t('experience.title')}</h2>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
@@ -97,13 +115,17 @@ const Timeline = () => {
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rounded-full" />
-                <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-700`}>
+                <Card className={`w-full md:w-5/12 ${index % 2 === 0 ? 'mr-auto md:mr-8' : 'ml-auto md:ml-8'} bg-slate-800 hover:bg-slate-700 transition-colors duration-300`}>
                   <div className="relative overflow-hidden">
-                    <img
-                      src={experience.image}
-                      alt={experience.title}
-                      className="w-full h-48 object-cover"
-                    />
+                    {experience.images ? (
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={experience.images[currentImageIndex]}
+                          alt={experience.title}
+                          className="w-full h-full object-cover animate-morph"
+                        />
+                      </div>
+                    ) : null}
                     <div className="p-6">
                       <div className="flex items-center mb-2 text-sm text-gray-300">
                         <Calendar className="w-4 h-4 mr-2" />
