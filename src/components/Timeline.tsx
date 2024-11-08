@@ -7,6 +7,13 @@ const Timeline = () => {
 
   const experiences = [
     {
+      id: 0,
+      title: t('experience.positions.position0.title'),
+      company: t('experience.positions.position0.company'),
+      date: t('experience.positions.position0.date'),
+      description: t('experience.positions.position0.description'),
+    },
+    {
       id: 1,
       title: t('experience.positions.position1.title'),
       company: t('experience.positions.position1.company'),

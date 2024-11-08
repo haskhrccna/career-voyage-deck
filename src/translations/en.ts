@@ -13,6 +13,12 @@ export const en = {
   experience: {
     title: "Professional Journey",
     positions: {
+      position0: {
+        title: "Principal Resident Engineer-Electrical",
+        company: "AtkinsRéalis",
+        date: "Nov 2024 - Present",
+        description: "400kV OHTL transmission line upgrade including but not limited to Engineering, procurement and construction including design, manufacturing, FAT, insurance, packing, shipping, delivery to site, installation, testing, commissioning and handing over in satisfactory condition of works."
+      },
       position1: {
         title: "Principal Resident Engineer-Electrical",
         company: "AECOM Middle East",
