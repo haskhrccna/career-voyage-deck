@@ -17,7 +17,7 @@ export const en = {
         title: "Principal Resident Engineer-Electrical",
         company: "AECOM Middle East",
         date: "May 2024 - Oct 2024",
-        description: "Installation of 33kV primary substations, switching station and 11kV cables and related substations"
+        description: "Installation of 33kV primary substations, switching station and 11kV cables and related substations, Installation of street light network with all related works."
       },
       position2: {
         title: "Project Manager",
