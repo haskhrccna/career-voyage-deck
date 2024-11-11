@@ -16,7 +16,15 @@ const IMAGES = [
   "/images/projects/11tr.jpg",
   "/images/projects/33cable.jpg",
   "/images/projects/33swg.jpg",
-  "/images/projects/33tr.jpg"
+  "/images/projects/33tr.jpg",
+  "/images/projects/civil1.JPG",
+  "/images/projects/jointing1.JPG",
+  "/images/projects/jointing2.JPG",
+  "/images/projects/pulling1.jpg",
+  "/images/projects/pulling2.JPG",
+  "/images/projects/termination1.JPG",
+  "/images/projects/termination2.JPG",
+  "/images/projects/testing1.JPG"
 ];
 
 const ProjectImages = () => {
