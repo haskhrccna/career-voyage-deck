@@ -46,8 +46,13 @@ jobs:
         echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         
-        # Add server to known hosts
-        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+        # Add server to known hosts (using explicit SERVER_IP)
+        if [ -n "$SERVER_IP" ]; then
+          ssh-keyscan "$SERVER_IP" >> ~/.ssh/known_hosts
+        else
+          echo "Error: SERVER_IP is not set"
+          exit 1
+        fi
         
         # Copy docker-compose and related files
         scp -i ~/.ssh/deploy_key \
