@@ -10,6 +10,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
+    env:
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      
     steps:
     - uses: actions/checkout@v3
     
@@ -36,23 +41,28 @@ jobs:
       
     - name: Deploy to Production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
-        # Setup SSH key
+        # Verify environment variables
+        if [ -z "$SERVER_IP" ]; then
+          echo "Error: SERVER_IP is not set in GitHub secrets"
+          exit 1
+        fi
+        
+        if [ -z "$SERVER_USER" ]; then
+          echo "Error: SERVER_USER is not set in GitHub secrets"
+          exit 1
+        fi
+        
+        if [ -z "$DEPLOY_KEY" ]; then
+          echo "Error: DEPLOY_SSH_KEY is not set in GitHub secrets"
+          exit 1
+        fi
+        
+        # Setup SSH
         mkdir -p ~/.ssh
         echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-        
-        # Add server to known hosts (using explicit SERVER_IP)
-        if [ -n "$SERVER_IP" ]; then
-          ssh-keyscan "$SERVER_IP" >> ~/.ssh/known_hosts
-        else
-          echo "Error: SERVER_IP is not set"
-          exit 1
-        fi
+        ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
         
         # Copy docker-compose and related files
         scp -i ~/.ssh/deploy_key \
