@@ -8,6 +8,7 @@
 !public/
 !index.html
 !tsconfig.json
+!tsconfig.app.json
 !vite.config.ts
 !tailwind.config.ts
 !postcss.config.js
