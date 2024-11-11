@@ -41,11 +41,16 @@ jobs:
         SERVER_IP: ${{ secrets.SERVER_IP }}
         SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
-        echo "$DEPLOY_KEY" > deploy_key
-        chmod 600 deploy_key
+        # Setup SSH key
+        mkdir -p ~/.ssh
+        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        
+        # Add server to known hosts
+        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
         
         # Copy docker-compose and related files
-        scp -i deploy_key -o StrictHostKeyChecking=no \
+        scp -i ~/.ssh/deploy_key \
           docker-compose.yml \
           Dockerfile \
           nginx.conf \
@@ -54,12 +59,12 @@ jobs:
           $SERVER_USER@$SERVER_IP:/app/
           
         # Copy the built application
-        scp -i deploy_key -o StrictHostKeyChecking=no -r \
+        scp -i ~/.ssh/deploy_key -r \
           dist/* \
           $SERVER_USER@$SERVER_IP:/app/dist/
           
         # Execute deployment commands on the server
-        ssh -i deploy_key -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP '
+        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
           cd /app
           docker-compose down
           docker-compose up -d
