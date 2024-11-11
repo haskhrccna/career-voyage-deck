@@ -2,8 +2,12 @@
 FROM node:20-alpine as builder
 
 WORKDIR /app
-COPY package*.json ./
+
+# Copy package files first
+COPY package.json package-lock.json ./
 RUN npm install
+
+# Then copy the rest of the application
 COPY . .
 RUN npm run build
 
