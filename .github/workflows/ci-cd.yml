@@ -10,6 +10,12 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
+    env:
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      
     steps:
     - uses: actions/checkout@v3
     
@@ -25,21 +31,51 @@ jobs:
     - name: Build
       run: npm run build
       
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        docker-compose --version
+      
     - name: Build Docker Compose
       run: docker-compose build
       
     - name: Deploy to Production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
-        echo "$DEPLOY_KEY" > deploy_key
-        chmod 600 deploy_key
+        # Check required secrets
+        if [ -z "$SERVER_IP" ]; then
+          echo "Error: SERVER_IP is not set in GitHub secrets. Please add it in your repository settings."
+          echo "Go to Settings -> Secrets and variables -> Actions -> New repository secret"
+          echo "Name: SERVER_IP"
+          echo "Value: Your server IP address"
+          exit 1
+        fi
+        
+        if [ -z "$SERVER_USER" ]; then
+          echo "Error: SERVER_USER is not set in GitHub secrets. Please add it in your repository settings."
+          echo "Go to Settings -> Secrets and variables -> Actions -> New repository secret"
+          echo "Name: SERVER_USER"
+          echo "Value: Your server username (e.g., ubuntu)"
+          exit 1
+        fi
+        
+        if [ -z "$DEPLOY_KEY" ]; then
+          echo "Error: DEPLOY_SSH_KEY is not set in GitHub secrets. Please add it in your repository settings."
+          echo "Go to Settings -> Secrets and variables -> Actions -> New repository secret"
+          echo "Name: DEPLOY_SSH_KEY"
+          echo "Value: Your SSH private key for deployment"
+          exit 1
+        fi
+        
+        # Setup SSH
+        mkdir -p ~/.ssh
+        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
         
         # Copy docker-compose and related files
-        scp -i deploy_key -o StrictHostKeyChecking=no \
+        scp -i ~/.ssh/deploy_key \
           docker-compose.yml \
           Dockerfile \
           nginx.conf \
@@ -48,30 +84,29 @@ jobs:
           $SERVER_USER@$SERVER_IP:/app/
           
         # Copy the built application
-        scp -i deploy_key -o StrictHostKeyChecking=no -r \
+        scp -i ~/.ssh/deploy_key -r \
           dist/* \
           $SERVER_USER@$SERVER_IP:/app/dist/
           
         # Execute deployment commands on the server
-        ssh -i deploy_key -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP '
+        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
           cd /app
           docker-compose down
           docker-compose up -d
         '
         
-    - name: Send Email Notification
+    - name: Send Deployment Status Email
       if: always()
-      uses: resend/resend-action@v0.1.0
-      with:
-        api-key: ${{ secrets.RESEND_API_KEY }}
-        from: 'notifications@yourdomain.com'
-        to: 'haskhr@hotmail.com'
-        subject: 'Deployment Status: ${{ job.status }}'
-        body: |
-          Deployment Status: ${{ job.status }}
-          Repository: ${{ github.repository }}
-          Commit: ${{ github.sha }}
-          Triggered by: ${{ github.actor }}
-          
-          View the deployment logs at:
-          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      env:
+        RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      run: |
+        curl -X POST \
+        -H "Authorization: Bearer $RESEND_API_KEY" \
+        -H "Content-Type: application/json" \
+        https://api.resend.com/emails \
+        -d '{
+          "from": "notifications@yourdomain.com",
+          "to": "haskhr@hotmail.com",
+          "subject": "Deployment Status: ${{ job.status }}",
+          "html": "Deployment Status: ${{ job.status }}<br>Repository: ${{ github.repository }}<br>Commit: ${{ github.sha }}<br>Triggered by: ${{ github.actor }}<br><br>View the deployment logs at:<br>https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        }'
