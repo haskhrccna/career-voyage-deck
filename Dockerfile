@@ -10,7 +10,7 @@ COPY package.json package-lock.json .
 RUN npm install
 
 # Then copy the rest of the application
-COPY . .
+COPY  .   .
 RUN npm run build
 
 # Production stage
