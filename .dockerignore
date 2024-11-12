@@ -1,7 +1,7 @@
-# First, exclude everything
+# Exclude everything first
 *
 
-# Then, selectively include required files and directories
+# Then include necessary files and directories
 !package.json
 !package-lock.json
 !src/
@@ -15,12 +15,10 @@
 !postcss.config.js
 !nginx.conf
 
-# Still exclude node_modules and build artifacts even if they're in included directories
-node_modules
-node_modules/
-dist
-build
-.git
-.env
-.env.*
-*.log
+# Always exclude these files/directories even if they're in included directories
+**/node_modules
+**/dist
+**/build
+**/.git
+**/.env*
+**/*.log
