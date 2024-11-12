@@ -1,32 +1,11 @@
-# Version control
-.git
-.gitignore
+# First, exclude everything
+*
 
-# Environment files
-.env
-.env.*
-!.env.example
-
-# Logs
-*.log
-npm-debug.log*
-
-# Dependencies
-node_modules
-
-# Build output
-dist
-build
-
-# Editor directories
-.idea
-.vscode
-
-# Include necessary files
+# Then, selectively include required files and directories
 !package.json
 !package-lock.json
-!src/**
-!public/**
+!src/
+!public/
 !index.html
 !tsconfig.json
 !tsconfig.node.json
@@ -34,3 +13,13 @@ build
 !tailwind.config.ts
 !postcss.config.js
 !nginx.conf
+
+# Still exclude node_modules and build artifacts even if they're in included directories
+node_modules
+node_modules/
+dist
+build
+.git
+.env
+.env.*
+*.log
