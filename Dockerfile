@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 # Debug: List files to ensure everything is copied
-RUN ls -la
+#RUN ls -la
 
 # Build the application
 RUN npm run build && ls -la dist/
