@@ -1,6 +1,7 @@
 # Build stage
 FROM node:20-alpine as builder
 
+# Set working directory
 WORKDIR /app
 
 # Copy package files first for better caching
@@ -12,8 +13,11 @@ RUN npm ci
 # Copy source files and configurations
 COPY . .
 
+# Debug: List files to ensure everything is copied
+RUN ls -la
+
 # Build the application
-RUN npm run build
+RUN npm run build && ls -la dist/
 
 # Production stage
 FROM nginx:alpine
