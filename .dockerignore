@@ -1,7 +1,10 @@
-# Exclude everything first
-*
+# Exclude node_modules and other unnecessary files
+node_modules
+.git
+.env
+*.log
 
-# Then include necessary files
+# Include necessary files and directories
 !package.json
 !package-lock.json
 !src/
