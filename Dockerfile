@@ -10,14 +10,17 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy source files and configurations
+# Copy all source files and configurations
 COPY . .
 
-# Debug: List files to ensure everything is copied
-#RUN ls -la
+# Debug: List files before build
+RUN ls -la
 
 # Build the application
-RUN npm run build && ls -la dist/
+RUN npm run build
+
+# Debug: List files in dist after build
+RUN ls -la dist/
 
 # Production stage
 FROM nginx:alpine
