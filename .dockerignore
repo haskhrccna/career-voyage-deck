@@ -9,6 +9,7 @@
 !index.html
 !tsconfig.json
 !tsconfig.node.json
+!tsconfig.app.json
 !vite.config.ts
 !tailwind.config.ts
 !postcss.config.js
