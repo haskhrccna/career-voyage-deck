@@ -14,13 +14,13 @@ RUN npm ci
 COPY . .
 
 # Debug: List files before build
-RUN ls -la
+#RUN ls -la
 
 # Build the application
 RUN npm run build
 
 # Debug: List files in dist after build
-RUN ls -la dist/
+#RUN ls -la dist/
 
 # Production stage
 FROM nginx:alpine
