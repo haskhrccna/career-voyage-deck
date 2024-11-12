@@ -1,7 +1,12 @@
-# Exclude everything first
-*
+# Node modules and build artifacts
+node_modules/
+dist/
+build/
+.git/
+.env*
+*.log
 
-# Then include necessary files and directories
+# Include necessary files
 !package.json
 !package-lock.json
 !src/
@@ -14,11 +19,3 @@
 !tailwind.config.ts
 !postcss.config.js
 !nginx.conf
-
-# Always exclude these files/directories even if they're in included directories
-**/node_modules
-**/dist
-**/build
-**/.git
-**/.env*
-**/*.log
