@@ -4,7 +4,8 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
-  root: '.', // Keep this simple
+  //root: '.', // Keep this simple
+  root: 'dist', // If `index.html` is located in `/app/dist/`
   base: '/',
   server: {
     host: "::",
