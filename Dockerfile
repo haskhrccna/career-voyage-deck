@@ -9,14 +9,8 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy source files and configuration
-COPY index.html .
-COPY tsconfig*.json .
-COPY vite.config.ts .
-COPY tailwind.config.ts .
-COPY postcss.config.js .
-COPY src/ src/
-COPY public/ public/
+# Copy all source files at once
+COPY . .
 
 # Build the application
 RUN npm run build
