@@ -49,8 +49,11 @@ jobs:
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
         
-        # Create and set permissions for app directory on server
-        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP 'sudo mkdir -p /app && sudo chown -R $USER:$USER /app'
+        # Create and set permissions for app directory and dist subdirectory on server
+        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
+          sudo mkdir -p /app/dist
+          sudo chown -R $USER:$USER /app
+        '
         
         # Copy files
         scp -i ~/.ssh/deploy_key \
