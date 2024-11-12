@@ -3,15 +3,20 @@ FROM node:20-alpine as builder
 
 WORKDIR /app
 
-# Copy package files - using explicit file names instead of wildcard
-COPY package.json ./
-COPY package-lock.json ./
+# Copy package files
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
 
-# Copy source code and other necessary files
-COPY . .
+# Copy source code and configuration files
+COPY src/ ./src/
+COPY public/ ./public/
+COPY index.html ./
+COPY tsconfig*.json ./
+COPY vite.config.ts ./
+COPY tailwind.config.ts ./
+COPY postcss.config.js ./
 
 # Build the application
 RUN npm run build
