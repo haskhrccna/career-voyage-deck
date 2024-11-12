@@ -43,38 +43,16 @@ jobs:
     - name: Deploy to Production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # Check required secrets
-        if [ -z "$SERVER_IP" ]; then
-          echo "Error: SERVER_IP is not set in GitHub secrets. Please add it in your repository settings."
-          echo "Go to Settings -> Secrets and variables -> Actions -> New repository secret"
-          echo "Name: SERVER_IP"
-          echo "Value: Your server IP address"
-          exit 1
-        fi
-        
-        if [ -z "$SERVER_USER" ]; then
-          echo "Error: SERVER_USER is not set in GitHub secrets. Please add it in your repository settings."
-          echo "Go to Settings -> Secrets and variables -> Actions -> New repository secret"
-          echo "Name: SERVER_USER"
-          echo "Value: Your server username (e.g., ubuntu)"
-          exit 1
-        fi
-        
-        if [ -z "$DEPLOY_KEY" ]; then
-          echo "Error: DEPLOY_SSH_KEY is not set in GitHub secrets. Please add it in your repository settings."
-          echo "Go to Settings -> Secrets and variables -> Actions -> New repository secret"
-          echo "Name: DEPLOY_SSH_KEY"
-          echo "Value: Your SSH private key for deployment"
-          exit 1
-        fi
-        
         # Setup SSH
         mkdir -p ~/.ssh
         echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
         
-        # Copy docker-compose and related files
+        # Create and set permissions for app directory on server
+        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP 'sudo mkdir -p /app && sudo chown -R $USER:$USER /app'
+        
+        # Copy files
         scp -i ~/.ssh/deploy_key \
           docker-compose.yml \
           Dockerfile \
@@ -90,7 +68,7 @@ jobs:
           dist/* \
           $SERVER_USER@$SERVER_IP:/app/dist/
           
-        # Execute deployment commands on the server
+        # Execute deployment commands
         ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
           cd /app
           docker-compose down
