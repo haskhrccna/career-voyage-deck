@@ -8,22 +8,20 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface EmailRequest {
-  name: string;
-  email: string;
-  companyName: string;
-  subject: string;
-  message: string;
-  requestCV: boolean;
-}
-
-const handler = async (req: Request): Promise<Response> => {
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const emailRequest: EmailRequest = await req.json();
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not set");
+    }
+
+    const emailRequest = await req.json();
+    console.log("Received email request:", emailRequest);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -48,24 +46,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (res.ok) {
       const data = await res.json();
+      console.log("Email sent successfully:", data);
       return new Response(JSON.stringify(data), {
-        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
       });
     } else {
       const error = await res.text();
-      return new Response(JSON.stringify({ error }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("Error sending email:", error);
+      throw new Error(`Failed to send email: ${error}`);
     }
-  } catch (error: any) {
-    console.error("Error in sendemail function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (error) {
+    console.error("Error in send-email function:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
-};
-
-serve(handler);
+});
