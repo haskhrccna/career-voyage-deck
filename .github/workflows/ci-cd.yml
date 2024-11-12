@@ -81,6 +81,8 @@ jobs:
           nginx.conf \
           init.sql \
           .env \
+          package.json \
+          package-lock.json \
           $SERVER_USER@$SERVER_IP:/app/
           
         # Copy the built application
