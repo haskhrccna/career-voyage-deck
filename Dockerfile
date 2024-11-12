@@ -7,7 +7,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies and build
-RUN npm ci
+RUN npm install
 RUN npm run build
 
 # Production stage
