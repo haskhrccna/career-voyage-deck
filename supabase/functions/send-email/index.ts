@@ -29,7 +29,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "notifications@yourdomain.com",
+        from: "Contact Form <contact@hassan-adam.com>",
         to: "haskhr@hotmail.com",
         subject: `New Contact Form Submission: ${emailRequest.subject}`,
         html: `
