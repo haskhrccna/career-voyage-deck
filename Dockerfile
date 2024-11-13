@@ -9,12 +9,8 @@ COPY package*.json ./
 # Install dependencies and add terser
 RUN npm ci && npm install -D terser
 
-# Copy source code and config files
-COPY src/ ./src/
-COPY index.html ./
-COPY vite.config.ts ./
-COPY tsconfig*.json ./
-COPY public/ ./public/
+# Copy all source files
+COPY . .
 
 # Create missing TypeScript configs if they don't exist
 RUN if [ ! -f tsconfig.json ]; then \
@@ -28,13 +24,13 @@ RUN if [ ! -f tsconfig.node.json ]; then \
 # Set production environment
 ENV NODE_ENV=production
 
-# Show what files we have
+# Debug: show files
 RUN ls -la
 
 # Build the application
 RUN npm run build
 
-# Debug: Show build output
+# Debug: show build output
 RUN ls -la dist
 
 # Production stage
