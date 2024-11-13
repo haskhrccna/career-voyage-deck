@@ -4,24 +4,32 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  root: process.cwd(),
+  base: '', // Empty base to use relative paths
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    manifest: true,
+    modulePreload: {
+      polyfill: false
+    },
     rollupOptions: {
-      external: ['/assets/*'],
-      input: path.resolve(__dirname, 'index.html'),
+      input: './index.html',
+      preserveEntrySignatures: "strict",
       output: {
-        manualChunks: undefined,
-        inlineDynamicImports: false,
         format: 'es',
-        dir: 'dist'
+        entryFileNames: '[name].[hash].js',
+        chunkFileNames: '[name].[hash].js',
+        assetFileNames: '[name].[hash][extname]'
       }
-    }
+    },
+    assetsInlineLimit: 0,
+    cssCodeSplit: true,
+    sourcemap: false
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src")
     }
-  },
-  base: './' // Add this line
+  }
 });
