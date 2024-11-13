@@ -3,9 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies first
+# Copy package files
 COPY package*.json ./
-RUN npm ci
+
+# Install dependencies and add terser
+RUN npm ci && npm install -D terser
 
 # Copy source code and config files
 COPY src/ ./src/
@@ -23,12 +25,11 @@ RUN if [ ! -f tsconfig.node.json ]; then \
     echo '{"compilerOptions":{"composite":true,"skipLibCheck":true,"module":"ESNext","moduleResolution":"bundler","allowSyntheticDefaultImports":true},"include":["vite.config.ts"]}' > tsconfig.node.json; \
     fi
 
-# Debug: Show what files we have
-RUN ls -la
-
 # Set production environment
 ENV NODE_ENV=production
-ENV VITE_USER_NODE_ENV=production
+
+# Show what files we have
+RUN ls -la
 
 # Build the application
 RUN npm run build
@@ -42,9 +43,6 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Verify files
-RUN ls -la /usr/share/nginx/html
 
 EXPOSE 80
 
