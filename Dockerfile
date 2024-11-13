@@ -19,8 +19,11 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Copy built assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Create the directory where we'll serve files from
+RUN mkdir -p /app/dist
+
+# Copy built assets from builder stage to the new location
+COPY --from=builder /app/dist /app/dist
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
