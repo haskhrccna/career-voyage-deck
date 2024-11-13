@@ -23,7 +23,8 @@ FROM nginx:alpine
 RUN mkdir -p /app/dist
 
 # Copy built assets from builder stage to the new location
-COPY --from=builder /app/dist /app/dist
+#COPY --from=builder /app/dist /app/dist
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
