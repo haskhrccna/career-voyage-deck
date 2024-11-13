@@ -3,17 +3,23 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Debug: Show working directory and contents
+RUN pwd && \
+    echo "Initial contents:" && \
+    ls -la
+
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
 
-# Copy the rest of the application
+# Copy everything else
 COPY . .
 
-# Debug: Show content
-RUN ls -la && \
-    echo "Content of src directory:" && \
-    ls -la src
+# Debug: Show all contents after copy
+RUN echo "Contents after copy:" && \
+    ls -la && \
+    echo "Current working directory:" && \
+    pwd
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -21,9 +27,6 @@ ENV VITE_BASE_URL=./
 
 # Build the application
 RUN npm run build
-
-# Debug: Show build output
-RUN ls -la dist
 
 # Production stage
 FROM nginx:alpine
