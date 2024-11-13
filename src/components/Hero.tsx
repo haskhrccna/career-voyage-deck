@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Hero = () => {
@@ -13,10 +13,11 @@ const Hero = () => {
           <div className="flex flex-col items-center">
             <Avatar className="h-48 w-48 flex-shrink-0 border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-300">
               <AvatarImage
-                src="/profile.jpg"
+                src="/images/profile.jpg"
                 alt="Profile photo"
                 className="object-cover object-center"
               />
+              <AvatarFallback>HA</AvatarFallback>
             </Avatar>
             <div className="mt-4 relative">
               <div className="bg-emerald-500/90 px-4 py-1 rounded-full text-white font-semibold relative overflow-hidden">
