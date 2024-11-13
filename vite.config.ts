@@ -7,7 +7,19 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    manifest: true, // Generate manifest file
+    rollupOptions: {
+      input: path.resolve(__dirname, 'index.html'),
+      output: {
+        manualChunks: undefined,
+        inlineDynamicImports: false,
+        entryFileNames: `assets/[name].[hash].js`,
+        chunkFileNames: `assets/[name].[hash].js`,
+        assetFileNames: `assets/[name].[hash].[ext]`
+      },
+      external: ['/assets/*'] // Add external pattern
+    }
   },
   resolve: {
     alias: {
