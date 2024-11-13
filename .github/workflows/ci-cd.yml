@@ -110,7 +110,13 @@ jobs:
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
         
-        # Copy files to server
+        # Create directory structure on server
+        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
+          sudo mkdir -p /app/dist
+          sudo chown -R $USER:$USER /app
+        '
+        
+        # Copy configuration files
         scp -i ~/.ssh/deploy_key \
           docker-compose.yml \
           Dockerfile \
@@ -132,7 +138,6 @@ jobs:
           docker-compose down
           docker-compose up -d
         '
-        
     - name: Send Deployment Status Email
       if: always()
       run: |
@@ -141,7 +146,7 @@ jobs:
         -H "Content-Type: application/json" \
         https://api.resend.com/emails \
         -d '{
-          "from": "notifications@yourdomain.com",
+          "from": "notifications@hassan-adam.com",
           "to": "haskhr@hotmail.com",
           "subject": "Deployment Status: ${{ job.status }}",
           "html": "Deployment Status: ${{ job.status }}<br>Repository: ${{ github.repository }}<br>Commit: ${{ github.sha }}<br>Triggered by: ${{ github.actor }}<br><br>View the deployment logs at:<br>https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
