@@ -26,6 +26,8 @@ RUN mkdir -p /app/dist
 #COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+COPY --from=builder /app/dist/assets /usr/share/nginx/html/assets
+
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
