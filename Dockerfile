@@ -7,14 +7,47 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy configuration files
-COPY tsconfig*.json ./
-COPY vite.config.ts ./
+# Copy source files and configuration
+COPY . .
 
-# Copy source code
-COPY src/ ./src/
-COPY public/ ./public/
-COPY index.html ./
+# Create tsconfig.json if it doesn't exist
+RUN echo '{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}' > tsconfig.json
+
+# Create tsconfig.node.json
+RUN echo '{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}' > tsconfig.node.json
 
 # Build
 RUN npm run build
@@ -24,7 +57,6 @@ FROM nginx:alpine
 
 # Copy build output
 COPY --from=builder /app/dist /usr/share/nginx/html
-
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
