@@ -34,42 +34,68 @@ jobs:
     - name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # Debug: Print current directory and files
-        pwd
-        ls -la
+        # Previous SSH setup...
         
-        # Setup SSH directory
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        
-        # Write the SSH key
-        echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-        chmod 600 ~/.ssh/deploy_key
-        
-        # Debug: Check key format (safely)
-        if ! grep -q "BEGIN OPENSSH PRIVATE KEY" ~/.ssh/deploy_key; then
-          echo "Key is missing BEGIN marker"
+        # Create and verify app directory
+        echo "Creating app directory..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          sudo mkdir -p /app
+          sudo chown -R ubuntu:ubuntu /app
+          ls -la /app
+        '
+
+        # Copy configuration files with verification
+        echo "Copying configuration files..."
+        for file in docker-compose.yml Dockerfile nginx.conf init.sql .env package.json package-lock.json; do
+          if [ -f "$file" ]; then
+            echo "Copying $file..."
+            scp -i ~/.ssh/deploy_key "$file" "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
+          else
+            echo "Warning: $file not found"
+          fi
+        done
+
+        # Verify config files copied
+        echo "Verifying config files..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          echo "Files in /app:"
+          ls -la /app
+        '
+
+        # Copy dist directory with verification
+        echo "Copying dist directory..."
+        if [ -d "dist" ]; then
+          scp -i ~/.ssh/deploy_key -r dist/* "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+          
+          echo "Verifying dist directory..."
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+            echo "Files in /app/dist:"
+            ls -la /app/dist
+          '
+        else
+          echo "Error: dist directory not found"
           exit 1
         fi
-        if ! grep -q "END OPENSSH PRIVATE KEY" ~/.ssh/deploy_key; then
-          echo "Key is missing END marker"
-          exit 1
-        fi
-        
-        # Setup known hosts
-        ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
-        chmod 600 ~/.ssh/known_hosts
-        
-        # Test SSH connection with maximum verbosity
-        ssh -vvv -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" "echo 'SSH test successful'"
-            
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
+
+        # Deploy with status checks
+        echo "Starting deployment..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          cd /app
+          echo "Stopping existing containers..."
+          docker-compose down
+          
+          echo "Building new containers..."
+          docker-compose build --no-cache
+          
+          echo "Starting containers..."
+          docker-compose up -d
+          
+          echo "Verifying containers..."
+          docker ps
+          
+          echo "Checking container logs..."
+          docker-compose logs
+        '
         
     - name: Send Deployment Status Email
       if: always()
