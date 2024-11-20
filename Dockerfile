@@ -22,7 +22,7 @@ RUN mkdir -p /usr/share/nginx/html/images && \
     chmod 755 /usr/share/nginx/html/images
 
 # Copy the profile photo and set the permissions
-COPY /public/images/profile.jpg /usr/share/nginx/html/images/
+COPY ./public/images/profile.jpg /usr/share/nginx/html/images/
 
 RUN chmod 644 /usr/share/nginx/html/images/profile.jpg
 
