@@ -32,18 +32,22 @@ jobs:
         npm run build
         ls -la dist/
     
-    - name: Setup SSH and Deploy
+    - Name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
+        # Debug: Print working directory
+        pwd
+        
         # Setup SSH with debug output
-        set -x
         mkdir -p ~/.ssh
-        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+        echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
+        
+        # Add server to known hosts
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
         
         # Test SSH connection
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP 'echo "SSH connection successful"'
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection test successful"'
         
         # Create directory structure on server
         ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
