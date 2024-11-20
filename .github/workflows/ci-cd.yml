@@ -4,16 +4,17 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     env:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      
+
     steps:
     - uses: actions/checkout@v3
     
@@ -34,81 +35,40 @@ jobs:
     - name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # Debug environment
         echo "Setting up SSH..."
-        
-        # Create .ssh directory
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        
-        # Write SSH key
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh
         echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-        
-        # Debug key file
-        echo "Checking SSH key file..."
-        ls -la ~/.ssh/deploy_key
-        
-        # Add known hosts
+
         echo "Adding known hosts..."
         ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
-        chmod 600 ~/.ssh/known_hosts
         
-        # Test SSH connection
         echo "Testing SSH connection..."
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" echo "SSH connection successful"
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" echo "SSH connection successful" || { echo "SSH failed"; exit 1; }
         
-        if [ $? -eq 0 ]; then
-          echo "SSH connection successful. Starting deployment..."
-          
-        
-        # Create app directory and setup Docker permissions
         echo "Setting up server environment..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          # Create directories
           sudo mkdir -p /app
           sudo chown -R $USER:$USER /app
-          
-          # Add user to docker group if not already added
           sudo usermod -aG docker $USER
-          
-          # Fix Docker socket permissions
-          sudo chmod 666 /var/run/docker.sock
-          
-          # Restart Docker service
+          sudo chown root:docker /var/run/docker.sock
+          sudo chmod 660 /var/run/docker.sock
           sudo systemctl restart docker
-          
-          # Wait for Docker to be ready
-          sleep 5
-          
-          echo "Server environment setup complete"
         '
-
-        # Copy files
-        echo "Copying configuration files..."
+        
+        echo "Copying files to server..."
         scp -i ~/.ssh/deploy_key \
-          docker-compose.yml \
-          Dockerfile \
-          nginx.conf \
-          init.sql \
-          .env \
-          package.json \
-          package-lock.json \
+          docker-compose.yml Dockerfile nginx.conf init.sql .env package.json package-lock.json \
           "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
         
-        echo "Copying dist directory..."
-        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" 'mkdir -p /app/dist'
-        scp -i ~/.ssh/deploy_key -r \
-          dist/* \
-          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+        scp -i ~/.ssh/deploy_key -r dist/* "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
         
-        # Deploy with new shell session
-        echo "Starting deployment..."
-        ssh -i ~/.ssh/deploy_key "${{
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
+        echo "Starting application using Docker Compose..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          cd /app
+          docker-compose down
+          docker-compose up -d --build
+        '
 
     - name: Send Deployment Status Email
       if: always()
