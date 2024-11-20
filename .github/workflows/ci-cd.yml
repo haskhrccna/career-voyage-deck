@@ -33,10 +33,6 @@ jobs:
     
     - name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
         # Debug: Print current directory and files
         pwd
@@ -69,56 +65,12 @@ jobs:
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=~/.ssh/known_hosts \
             "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" "echo 'SSH test successful'"
-
-        # If SSH test successful, proceed with deployment
-        if [ $? -eq 0 ]; then
-          echo "SSH connection successful, proceeding with deployment..."
-          
-          # Create directory structure on server
-          ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
-            mkdir -p /app/dist
-            sudo chown -R $USER:$USER /app
-          '
-          
-          # Show local files
-          echo "Local files:"
-          ls -la
-          
-          # Copy configuration files
-          echo "Copying configuration files..."
-          scp -v -i ~/.ssh/deploy_key \
-            docker-compose.yml \
-            Dockerfile \
-            nginx.conf \
-            init.sql \
-            .env \
-            package.json \
-            package-lock.json \
-            "$SERVER_USER@$SERVER_IP:/app/"
-          
-          # Copy dist directory
-          echo "Copying dist directory..."
-          if [ -d "dist" ]; then
-            scp -v -i ~/.ssh/deploy_key -r \
-              dist/* \
-              "$SERVER_USER@$SERVER_IP:/app/dist/"
-          else
-            echo "dist directory not found!"
-            exit 1
-          fi
-          
-          # Deploy
-          echo "Starting deployment..."
-          ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
-            cd /app
-            docker-compose down
-            docker-compose up --build -d
-          '
-        else
-          echo "SSH connection test failed"
-          exit 1
-        fi
-
+            
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        
     - name: Send Deployment Status Email
       if: always()
       run: |
