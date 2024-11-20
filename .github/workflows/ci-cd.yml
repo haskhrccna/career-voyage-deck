@@ -61,48 +61,50 @@ jobs:
         if [ $? -eq 0 ]; then
           echo "SSH connection successful. Starting deployment..."
           
-          # Create app directory
-          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-            sudo mkdir -p /app
-            sudo chown -R $USER:$USER /app
-            echo "App directory created and permissions set"
-          '
+        
+        # Create app directory and setup Docker permissions
+        echo "Setting up server environment..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          # Create directories
+          sudo mkdir -p /app
+          sudo chown -R $USER:$USER /app
           
-          # Copy files
-          echo "Copying files..."
-          scp -i ~/.ssh/deploy_key \
-            docker-compose.yml \
-            Dockerfile \
-            nginx.conf \
-            init.sql \
-            .env \
-            package.json \
-            package-lock.json \
-            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
+          # Add user to docker group if not already added
+          sudo usermod -aG docker $USER
           
-          echo "Copying dist directory..."
-          scp -i ~/.ssh/deploy_key -r \
-            dist/* \
-            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+          # Fix Docker socket permissions
+          sudo chmod 666 /var/run/docker.sock
           
-          # Deploy
-          echo "Starting deployment..."
-          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-            cd /app
-            docker-compose down
-            docker system prune -af
-            docker-compose up --build -d
-            
-            echo "Deployment complete. Container status:"
-            docker ps
-            
-            echo "Container logs:"
-            docker-compose logs
-          '
-        else
-          echo "SSH connection failed"
-          exit 1
-        fi
+          # Restart Docker service
+          sudo systemctl restart docker
+          
+          # Wait for Docker to be ready
+          sleep 5
+          
+          echo "Server environment setup complete"
+        '
+
+        # Copy files
+        echo "Copying configuration files..."
+        scp -i ~/.ssh/deploy_key \
+          docker-compose.yml \
+          Dockerfile \
+          nginx.conf \
+          init.sql \
+          .env \
+          package.json \
+          package-lock.json \
+          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
+        
+        echo "Copying dist directory..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" 'mkdir -p /app/dist'
+        scp -i ~/.ssh/deploy_key -r \
+          dist/* \
+          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+        
+        # Deploy with new shell session
+        echo "Starting deployment..."
+        ssh -i ~/.ssh/deploy_key "${{
       env:
         DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         SERVER_IP: ${{ secrets.SERVER_IP }}
