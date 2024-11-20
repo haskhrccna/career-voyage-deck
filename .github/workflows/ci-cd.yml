@@ -30,73 +30,84 @@ jobs:
       run: |
         npm run build
         ls -la dist/
-    
+
     - name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # Previous SSH setup...
+        # Debug environment
+        echo "Setting up SSH..."
         
-        # Create and verify app directory
-        echo "Creating app directory..."
-        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          sudo mkdir -p /app
-          sudo chown -R ubuntu:ubuntu /app
-          ls -la /app
-        '
-
-        # Copy configuration files with verification
-        echo "Copying configuration files..."
-        for file in docker-compose.yml Dockerfile nginx.conf init.sql .env package.json package-lock.json; do
-          if [ -f "$file" ]; then
-            echo "Copying $file..."
-            scp -i ~/.ssh/deploy_key "$file" "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
-          else
-            echo "Warning: $file not found"
-          fi
-        done
-
-        # Verify config files copied
-        echo "Verifying config files..."
-        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          echo "Files in /app:"
-          ls -la /app
-        '
-
-        # Copy dist directory with verification
-        echo "Copying dist directory..."
-        if [ -d "dist" ]; then
-          scp -i ~/.ssh/deploy_key -r dist/* "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+        # Create .ssh directory
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        
+        # Write SSH key
+        echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        
+        # Debug key file
+        echo "Checking SSH key file..."
+        ls -la ~/.ssh/deploy_key
+        
+        # Add known hosts
+        echo "Adding known hosts..."
+        ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+        
+        # Test SSH connection
+        echo "Testing SSH connection..."
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" echo "SSH connection successful"
+        
+        if [ $? -eq 0 ]; then
+          echo "SSH connection successful. Starting deployment..."
           
-          echo "Verifying dist directory..."
+          # Create app directory
           ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-            echo "Files in /app/dist:"
-            ls -la /app/dist
+            sudo mkdir -p /app
+            sudo chown -R $USER:$USER /app
+            echo "App directory created and permissions set"
+          '
+          
+          # Copy files
+          echo "Copying files..."
+          scp -i ~/.ssh/deploy_key \
+            docker-compose.yml \
+            Dockerfile \
+            nginx.conf \
+            init.sql \
+            .env \
+            package.json \
+            package-lock.json \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
+          
+          echo "Copying dist directory..."
+          scp -i ~/.ssh/deploy_key -r \
+            dist/* \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+          
+          # Deploy
+          echo "Starting deployment..."
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+            cd /app
+            docker-compose down
+            docker system prune -af
+            docker-compose up --build -d
+            
+            echo "Deployment complete. Container status:"
+            docker ps
+            
+            echo "Container logs:"
+            docker-compose logs
           '
         else
-          echo "Error: dist directory not found"
+          echo "SSH connection failed"
           exit 1
         fi
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
 
-        # Deploy with status checks
-        echo "Starting deployment..."
-        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          cd /app
-          echo "Stopping existing containers..."
-          docker-compose down
-          
-          echo "Building new containers..."
-          docker-compose build --no-cache
-          
-          echo "Starting containers..."
-          docker-compose up -d
-          
-          echo "Verifying containers..."
-          docker ps
-          
-          echo "Checking container logs..."
-          docker-compose logs
-        '
-        
     - name: Send Deployment Status Email
       if: always()
       run: |
