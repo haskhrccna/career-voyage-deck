@@ -48,6 +48,7 @@ jobs:
         echo "Setting up SSH..."
         mkdir -p ~/.ssh
         echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+        chmod 700 ~/.ssh
         chmod 600 ~/.ssh/deploy_key
         
         # Debug SSH key (safely)
