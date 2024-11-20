@@ -31,33 +31,59 @@ jobs:
         npm run build
         ls -la dist/
     
-    - name: Setup SSH and Deploy  # Fixed capitalization here
+    - name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
-        # Debug: Print working directory
-        pwd
+        # Debug environment (safely)
+        echo "Checking environment variables (safely)..."
+        if [ -z "$SERVER_IP" ]; then echo "SERVER_IP is not set"; exit 1; fi
+        if [ -z "$SERVER_USER" ]; then echo "SERVER_USER is not set"; exit 1; fi
+        if [ -z "$DEPLOY_KEY" ]; then echo "DEPLOY_KEY is not set"; exit 1; fi
         
-        # Setup SSH with debug output
+        # Setup SSH with verbose output
+        echo "Setting up SSH..."
         mkdir -p ~/.ssh
-        echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         
-        # Add server to known hosts
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+        # Debug SSH key (safely)
+        echo "Checking SSH key..."
+        if ! grep -q "BEGIN" ~/.ssh/deploy_key; then
+          echo "SSH key does not contain BEGIN marker"
+          exit 1
+        fi
+        if ! grep -q "END" ~/.ssh/deploy_key; then
+          echo "SSH key does not contain END marker"
+          exit 1
+        fi
         
-        # Test SSH connection
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection test successful"'
+        # Add server to known hosts
+        echo "Adding server to known hosts..."
+        ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
+        
+        # Test SSH connection with debugging
+        echo "Testing SSH connection..."
+        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_IP" 'echo "SSH connection test successful"'
+        
+        # If we get here, SSH is working
+        echo "SSH connection successful, proceeding with deployment..."
         
         # Create directory structure on server
-        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
+        ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
           mkdir -p /app/dist
           sudo chown -R $USER:$USER /app
         '
         
-        # Verify files exist before copying
+        # Show local files
+        echo "Local files:"
         ls -la
         
-        # Copy configuration files with verbose output
+        # Copy files
+        echo "Copying configuration files..."
         scp -v -i ~/.ssh/deploy_key \
           docker-compose.yml \
           Dockerfile \
@@ -66,29 +92,22 @@ jobs:
           .env \
           package.json \
           package-lock.json \
-          $SERVER_USER@$SERVER_IP:/app/
+          "$SERVER_USER@$SERVER_IP:/app/"
         
-        # Verify dist directory exists
-        if [ ! -d "dist" ]; then
-          echo "dist directory not found"
+        # Copy dist directory
+        echo "Copying dist directory..."
+        if [ -d "dist" ]; then
+          scp -v -i ~/.ssh/deploy_key -r \
+            dist/* \
+            "$SERVER_USER@$SERVER_IP:/app/dist/"
+        else
+          echo "dist directory not found!"
           exit 1
         fi
         
-        # Copy build output with verbose output
-        scp -v -i ~/.ssh/deploy_key -r \
-          dist/* \
-          $SERVER_USER@$SERVER_IP:/app/dist/
-        
-        # Verify files on server
-        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
-          echo "Server directory contents:"
-          ls -la /app
-          echo "Dist directory contents:"
-          ls -la /app/dist
-        '
-        
         # Deploy
-        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
+        echo "Starting deployment..."
+        ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
           cd /app
           docker-compose down
           docker-compose up --build -d
