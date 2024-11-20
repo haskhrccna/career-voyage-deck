@@ -25,94 +25,30 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: |
-        npm ci
-        npm install --save-dev @types/node
-      
-    - name: Setup Build Environment
-      run: |
-        # Create vite.config.ts
-        cat > vite.config.ts << 'EOF'
-        import { defineConfig } from "vite";
-        import react from "@vitejs/plugin-react-swc";
-        import path from "path";
-
-        export default defineConfig({
-          plugins: [react()],
-          base: './',
-          build: {
-            outDir: 'dist',
-            emptyOutDir: true,
-            assetsDir: 'assets',
-            cssCodeSplit: false,
-            rollupOptions: {
-              output: {
-                assetFileNames: (assetInfo) => {
-                  let extType = assetInfo.name.split('.')[1];
-                  if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-                    extType = 'img';
-                  }
-                  return `assets/${extType}/[name]-[hash][extname]`;
-                },
-                chunkFileNames: 'assets/js/[name]-[hash].js',
-                entryFileNames: 'assets/js/[name]-[hash].js',
-              },
-            },
-          },
-          resolve: {
-            alias: {
-              "@": path.resolve(__dirname, "./src")
-            }
-          }
-        });
-        EOF
-
-        # Create tsconfig.json
-        echo '{
-          "compilerOptions": {
-            "target": "ES2020",
-            "lib": ["ES2020", "DOM", "DOM.Iterable"],
-            "module": "ESNext",
-            "skipLibCheck": true,
-            "moduleResolution": "bundler",
-            "allowImportingTsExtensions": true,
-            "resolveJsonModule": true,
-            "isolatedModules": true,
-            "noEmit": true,
-            "jsx": "react-jsx",
-            "strict": true,
-            "noUnusedLocals": false,
-            "noUnusedParameters": false,
-            "noFallthroughCasesInSwitch": true,
-            "baseUrl": ".",
-            "paths": {
-              "@/*": ["./src/*"]
-            }
-          },
-          "include": ["src"]
-        }' > tsconfig.json
-
+      run: npm ci
+    
     - name: Build
       run: |
-        echo "Node version:"
-        node --version
-        echo "NPM version:"
-        npm --version
-        echo "Current directory contents:"
-        ls -la
         echo "Building application..."
-        NODE_ENV=production npm run build
-        echo "Build complete. Dist directory contents:"
+        npm run build
+        echo "Build complete. Checking dist directory:"
         ls -la dist/
-      
+    
     - name: Install Docker Compose
       run: |
         sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
-      
+    
     - name: Deploy to Production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
+        # Verify we have the dist directory
+        if [ ! -d "dist" ]; then
+          echo "dist directory not found!"
+          ls -la
+          exit 1
+        fi
+
         # Setup SSH
         mkdir -p ~/.ssh
         echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
@@ -137,15 +73,24 @@ jobs:
           $SERVER_USER@$SERVER_IP:/app/
           
         # Copy the built application
+        echo "Copying dist directory..."
         scp -i ~/.ssh/deploy_key -r \
           dist/* \
           $SERVER_USER@$SERVER_IP:/app/dist/
-          
+        
+        # Verify files were copied
+        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
+          echo "Contents of /app:"
+          ls -la /app
+          echo "Contents of /app/dist:"
+          ls -la /app/dist
+        '
+        
         # Deploy
         ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
           cd /app
           docker-compose down
-          docker-compose up -d
+          docker-compose up --build -d
         '
         
     - name: Send Deployment Status Email
