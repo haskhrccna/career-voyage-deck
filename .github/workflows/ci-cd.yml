@@ -38,81 +38,86 @@ jobs:
         SERVER_IP: ${{ secrets.SERVER_IP }}
         SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
-        # Debug environment (safely)
-        echo "Checking environment variables (safely)..."
-        if [ -z "$SERVER_IP" ]; then echo "SERVER_IP is not set"; exit 1; fi
-        if [ -z "$SERVER_USER" ]; then echo "SERVER_USER is not set"; exit 1; fi
-        if [ -z "$DEPLOY_KEY" ]; then echo "DEPLOY_KEY is not set"; exit 1; fi
-        
-        # Setup SSH with verbose output
-        echo "Setting up SSH..."
-        mkdir -p ~/.ssh
-        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
-        chmod 700 ~/.ssh
-        chmod 600 ~/.ssh/deploy_key
-        
-        # Debug SSH key (safely)
-        echo "Checking SSH key..."
-        if ! grep -q "BEGIN" ~/.ssh/deploy_key; then
-          echo "SSH key does not contain BEGIN marker"
-          exit 1
-        fi
-        if ! grep -q "END" ~/.ssh/deploy_key; then
-          echo "SSH key does not contain END marker"
-          exit 1
-        fi
-        
-        # Add server to known hosts
-        echo "Adding server to known hosts..."
-        ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
-        
-        # Test SSH connection with debugging
-        echo "Testing SSH connection..."
-        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_IP" 'echo "SSH connection test successful"'
-        
-        # If we get here, SSH is working
-        echo "SSH connection successful, proceeding with deployment..."
-        
-        # Create directory structure on server
-        ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
-          mkdir -p /app/dist
-          sudo chown -R $USER:$USER /app
-        '
-        
-        # Show local files
-        echo "Local files:"
+        # Debug: Print current directory and files
+        pwd
         ls -la
         
-        # Copy files
-        echo "Copying configuration files..."
-        scp -v -i ~/.ssh/deploy_key \
-          docker-compose.yml \
-          Dockerfile \
-          nginx.conf \
-          init.sql \
-          .env \
-          package.json \
-          package-lock.json \
-          "$SERVER_USER@$SERVER_IP:/app/"
+        # Setup SSH directory
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
         
-        # Copy dist directory
-        echo "Copying dist directory..."
-        if [ -d "dist" ]; then
-          scp -v -i ~/.ssh/deploy_key -r \
-            dist/* \
-            "$SERVER_USER@$SERVER_IP:/app/dist/"
-        else
-          echo "dist directory not found!"
+        # Write the SSH key
+        echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        
+        # Debug: Check key format (safely)
+        if ! grep -q "BEGIN OPENSSH PRIVATE KEY" ~/.ssh/deploy_key; then
+          echo "Key is missing BEGIN marker"
+          exit 1
+        fi
+        if ! grep -q "END OPENSSH PRIVATE KEY" ~/.ssh/deploy_key; then
+          echo "Key is missing END marker"
           exit 1
         fi
         
-        # Deploy
-        echo "Starting deployment..."
-        ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
-          cd /app
-          docker-compose down
-          docker-compose up --build -d
-        '
+        # Setup known hosts
+        ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+        
+        # Test SSH connection with maximum verbosity
+        ssh -vvv -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=~/.ssh/known_hosts \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" "echo 'SSH test successful'"
+
+        # If SSH test successful, proceed with deployment
+        if [ $? -eq 0 ]; then
+          echo "SSH connection successful, proceeding with deployment..."
+          
+          # Create directory structure on server
+          ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
+            mkdir -p /app/dist
+            sudo chown -R $USER:$USER /app
+          '
+          
+          # Show local files
+          echo "Local files:"
+          ls -la
+          
+          # Copy configuration files
+          echo "Copying configuration files..."
+          scp -v -i ~/.ssh/deploy_key \
+            docker-compose.yml \
+            Dockerfile \
+            nginx.conf \
+            init.sql \
+            .env \
+            package.json \
+            package-lock.json \
+            "$SERVER_USER@$SERVER_IP:/app/"
+          
+          # Copy dist directory
+          echo "Copying dist directory..."
+          if [ -d "dist" ]; then
+            scp -v -i ~/.ssh/deploy_key -r \
+              dist/* \
+              "$SERVER_USER@$SERVER_IP:/app/dist/"
+          else
+            echo "dist directory not found!"
+            exit 1
+          fi
+          
+          # Deploy
+          echo "Starting deployment..."
+          ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_IP" '
+            cd /app
+            docker-compose down
+            docker-compose up --build -d
+          '
+        else
+          echo "SSH connection test failed"
+          exit 1
+        fi
 
     - name: Send Deployment Status Email
       if: always()
