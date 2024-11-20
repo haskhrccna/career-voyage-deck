@@ -112,10 +112,6 @@ jobs:
           docker-compose down
           docker-compose up --build -d
         '
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
 
     - name: Send Deployment Status Email
       if: always()
