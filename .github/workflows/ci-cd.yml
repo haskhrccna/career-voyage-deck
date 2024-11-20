@@ -25,7 +25,12 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm install -g typescript
+        npm ci
+    
+    - name: Type Check
+      run: tsc --noEmit
     
     - name: Build
       run: |
@@ -34,21 +39,9 @@ jobs:
         echo "Build complete. Checking dist directory:"
         ls -la dist/
     
-    - name: Install Docker Compose
-      run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-    
     - name: Deploy to Production
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        # Verify we have the dist directory
-        if [ ! -d "dist" ]; then
-          echo "dist directory not found!"
-          ls -la
-          exit 1
-        fi
-
         # Setup SSH
         mkdir -p ~/.ssh
         echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
@@ -57,11 +50,11 @@ jobs:
         
         # Create directory structure on server
         ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
-          sudo mkdir -p /app/dist
+          mkdir -p /app/dist
           sudo chown -R $USER:$USER /app
         '
         
-        # Copy configuration files
+        # Copy files
         scp -i ~/.ssh/deploy_key \
           docker-compose.yml \
           Dockerfile \
@@ -72,19 +65,10 @@ jobs:
           package-lock.json \
           $SERVER_USER@$SERVER_IP:/app/
           
-        # Copy the built application
-        echo "Copying dist directory..."
+        # Copy build output
         scp -i ~/.ssh/deploy_key -r \
           dist/* \
           $SERVER_USER@$SERVER_IP:/app/dist/
-        
-        # Verify files were copied
-        ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
-          echo "Contents of /app:"
-          ls -la /app
-          echo "Contents of /app/dist:"
-          ls -la /app/dist
-        '
         
         # Deploy
         ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_IP '
@@ -92,17 +76,23 @@ jobs:
           docker-compose down
           docker-compose up --build -d
         '
-        
+    
     - name: Send Deployment Status Email
       if: always()
+      env:
+        RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       run: |
-        curl -X POST \
-        -H "Authorization: Bearer $RESEND_API_KEY" \
-        -H "Content-Type: application/json" \
-        https://api.resend.com/emails \
-        -d '{
-          "from": "notifications@hassan-adam.com",
-          "to": "haskhr@hotmail.com",
-          "subject": "Deployment Status: ${{ job.status }}",
-          "html": "Deployment Status: ${{ job.status }}<br>Repository: ${{ github.repository }}<br>Commit: ${{ github.sha }}<br>Triggered by: ${{ github.actor }}<br><br>View the deployment logs at:<br>https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        }'
+        if [ -n "$RESEND_API_KEY" ]; then
+          curl -X POST \
+          -H "Authorization: Bearer $RESEND_API_KEY" \
+          -H "Content-Type: application/json" \
+          https://api.resend.com/emails \
+          -d '{
+            "from": "notifications@hassan-adam.com",
+            "to": "haskhr@hotmail.com",
+            "subject": "Deployment Status: ${{ job.status }}",
+            "html": "Deployment Status: ${{ job.status }}<br>Repository: ${{ github.repository }}<br>Commit: ${{ github.sha }}<br>Triggered by: ${{ github.actor }}<br><br>View the deployment logs at:<br>https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }'
+        else
+          echo "RESEND_API_KEY is not set, skipping email notification"
+        fi
