@@ -61,27 +61,25 @@ jobs:
         
         echo "Stopping any existing containers..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          cd /app
-          docker-compose down
+        cd /app
+        docker-compose down
         '
-        
+
         echo "Ensuring Nginx is the only service using port 80..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" "
-          sudo lsof -i :80 | grep -v nginx | awk '{print \$2}' | xargs -r sudo kill -9
+        sudo lsof -i :80 | awk '{print \$2}' | grep -v PID | xargs -r sudo kill -9
         "
-        
+
         echo "Starting application using Docker Compose..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          cd /app
-          docker-compose up -d --build
+        cd /app
+        docker-compose up -d --build
         '
-        
+
         echo "Verifying Nginx service is up and running..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
         cd /app
-        docker-compose ps
-        docker-compose logs nginx
-
+        docker-compose ps | grep "nginx" | grep "Up"
         '
         
     - name: Send Deployment Status Email
