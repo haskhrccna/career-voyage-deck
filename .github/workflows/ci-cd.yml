@@ -78,8 +78,10 @@ jobs:
         
         echo "Verifying Nginx service is up and running..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          cd /app
-          docker-compose ps | grep "nginx" | grep "Up"
+        cd /app
+        docker-compose ps
+        docker-compose logs nginx
+
         '
         
     - name: Send Deployment Status Email
