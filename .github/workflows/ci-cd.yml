@@ -4,17 +4,14 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     env:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-
     steps:
     - uses: actions/checkout@v3
     
@@ -31,7 +28,7 @@ jobs:
       run: |
         npm run build
         ls -la dist/
-
+        
     - name: Setup SSH and Deploy
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
@@ -39,7 +36,6 @@ jobs:
         mkdir -p ~/.ssh && chmod 700 ~/.ssh
         echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-
         echo "Adding known hosts..."
         ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
         
@@ -63,13 +59,28 @@ jobs:
         
         scp -i ~/.ssh/deploy_key -r dist/* "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
         
-        echo "Starting application using Docker Compose..."
+        echo "Stopping any existing containers..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
           cd /app
           docker-compose down
+        '
+        
+        echo "Ensuring Nginx is the only service using port 80..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          sudo lsof -i :80 | grep -v nginx | awk "{print \$2}" | xargs -r sudo kill -9
+        '
+        
+        echo "Starting application using Docker Compose..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          cd /app
           docker-compose up -d --build
         '
-
+        
+        echo "Verifying Nginx service is up and running..."
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          docker-compose ps | grep "nginx" | grep "Up"
+        '
+        
     - name: Send Deployment Status Email
       if: always()
       run: |
