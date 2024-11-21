@@ -66,9 +66,9 @@ jobs:
         '
         
         echo "Ensuring Nginx is the only service using port 80..."
-        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-          sudo lsof -i :80 | grep -v nginx | awk "{print \$2}" | xargs -r sudo kill -9
-        '
+        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" "
+          sudo lsof -i :80 | grep -v nginx | awk '{print \$2}' | xargs -r sudo kill -9
+        "
         
         echo "Starting application using Docker Compose..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
