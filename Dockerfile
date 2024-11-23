@@ -22,8 +22,10 @@ RUN mkdir -p /usr/share/nginx/html/images \
     && chmod -R 755 /usr/share/nginx/html \
     && chmod -R 755 /var/log/nginx
 
-# Copy images if they exist
-COPY dist/images/* /usr/share/nginx/html/images/ 2>/dev/null || :
+# Remove the problematic COPY command and handle images in a safer way
+RUN if [ -d "/app/dist/images" ]; then \
+      cp -r /app/dist/images/* /usr/share/nginx/html/images/ || true; \
+    fi
 
 # Test nginx configuration
 RUN nginx -t
