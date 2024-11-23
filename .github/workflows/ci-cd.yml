@@ -10,6 +10,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    
     env:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -25,10 +26,10 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build
         run: |
           npm run build
@@ -39,75 +40,74 @@ jobs:
 
       - name: Setup SSH
         run: |
-          # Create .ssh directory
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
-          # Write the private key to a file
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
-          # Add the host key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          
-          # Debug SSH setup (optional)
-          ls -la ~/.ssh
-          echo "SSH directory contents:"
-          ls -la ~/.ssh/
 
       - name: Test SSH Connection
         run: |
           echo "Testing SSH connection..."
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
 
-     - name: Deploy
+      - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
             cd /app
             
-            echo "Stopping and removing containers..."
-            docker-compose down -v
-            docker system prune -af
-            
-            echo "Checking running containers..."
+            echo "1. Current running containers:"
             docker ps -a
             
-            echo "Checking port 80..."
+            echo "2. Stopping all containers:"
+            docker-compose down
+            docker stop $(docker ps -a -q) || true
+            
+            echo "3. Checking port 80:"
             sudo netstat -tulpn | grep :80 || true
             
-            echo "Killing any process on port 80..."
-            sudo lsof -t -i:80 | xargs -r sudo kill -9
+            echo "4. Checking and killing any process using port 80:"
+            sudo lsof -i :80 || true
+            sudo fuser -k 80/tcp || true
             
-            echo "Starting containers..."
-            docker-compose up -d --build --force-recreate
+            echo "5. Removing old containers and images:"
+            docker system prune -af
+          '
+          
+          echo "6. Copying files to server..."
+          scp -i ~/.ssh/deploy_key \
+            docker-compose.yml Dockerfile nginx.conf .env \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+          
+          echo "7. Copying dist directory..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist'
+          scp -i ~/.ssh/deploy_key -r dist/* \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
+          
+          echo "8. Starting services..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+            cd /app
             
-            echo "Waiting for containers to start..."
-            sleep 20
+            docker-compose --verbose up -d --build --force-recreate
             
-            echo "Container status:"
+            echo "9. Waiting for services:"
+            sleep 15
+            
+            echo "10. Container status:"
             docker ps -a
             
-            echo "Nginx container logs:"
-            docker logs web_app
-            
-            echo "Nginx configuration test:"
-            docker exec web_app nginx -t
-            
-            echo "Nginx process status:"
-            docker exec web_app ps aux | grep nginx
-            
-            echo "Container network info:"
-            docker inspect web_app | grep IPAddress
-            
-            echo "Testing localhost access:"
-            docker exec web_app curl -v http://localhost:80
-            
-            echo "Testing external access:"
-            curl -v http://localhost:80
-            
-            echo "Complete container logs:"
+            echo "11. Container logs:"
             docker-compose logs
+            
+            echo "12. Testing nginx:"
+            curl -v http://localhost:80/test || true
+            
+            echo "13. Container network info:"
+            docker network inspect app_network || true
+            
+            echo "14. Container IP:"
+            docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" web_app
           '
 
       - name: Send Deployment Status Email
@@ -131,13 +131,4 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          # Remove SSH key
           rm -f ~/.ssh/deploy_key
-          # Clean up any remaining Docker resources
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            cd /app
-            if [ -f "docker-compose.yml" ]; then
-              docker-compose down -v || true
-            fi
-            docker system prune -af || true
-          ' || true
