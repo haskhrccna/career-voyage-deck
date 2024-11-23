@@ -28,59 +28,82 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
       - name: Build
         run: |
           npm run build
           ls -la dist/
+
+      - name: Setup SSH
+        run: |
+          # Create .ssh directory
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           
-      - name: Setup SSH and Deploy
+          # Write the private key to a file
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Add the host key
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          
+          # Debug SSH setup (optional)
+          ls -la ~/.ssh
+          echo "SSH directory contents:"
+          ls -la ~/.ssh/
+
+      - name: Test SSH Connection
+        run: |
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
+
+      - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # ... (previous SSH setup remains the same)
+          # Create deployment directory
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+            sudo mkdir -p /app
+            sudo chown -R $USER:$USER /app
+            sudo usermod -aG docker $USER
+            sudo chown root:docker /var/run/docker.sock
+            sudo chmod 660 /var/run/docker.sock
+            sudo systemctl restart docker
+          '
           
-          echo "Starting application using Docker Compose..."
-          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+          # Copy files
+          echo "Copying files to server..."
+          scp -i ~/.ssh/deploy_key \
+            docker-compose.yml Dockerfile nginx.conf .env \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+          
+          # Copy dist directory
+          echo "Copying dist directory..."
+          scp -i ~/.ssh/deploy_key -r dist \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+          
+          # Deploy application
+          echo "Deploying application..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
             cd /app
             
-            # Clean up any existing containers and volumes
-            docker-compose down -v
-            
-            # Pull latest images
-            DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose pull
+            # Clean up
+            docker-compose down -v || true
             
             # Start services
             DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose up -d --build --force-recreate
             
-            # Wait for services to start
+            # Wait for services
             echo "Waiting for services to start..."
             sleep 30
             
-            # Check container logs
-            echo "Checking container logs..."
-            docker-compose logs
-            
-            # Check specific service logs
-            echo "Checking nginx service logs..."
-            docker-compose logs nginx
-            echo "Checking app service logs..."
-            docker-compose logs app
-            
-            # Check service health
-            echo "Checking service health..."
+            # Check status
+            echo "Checking service status..."
             docker-compose ps
             
-            # Test nginx configuration
-            echo "Testing nginx configuration..."
-            docker-compose exec -T nginx nginx -t
-            
-            # Test HTTP connection
-            echo "Testing HTTP connection..."
-            curl -v http://localhost
+            # Check logs
+            echo "Checking service logs..."
+            docker-compose logs
           '
-      
+
       - name: Send Deployment Status Email
         if: always()
         run: |
