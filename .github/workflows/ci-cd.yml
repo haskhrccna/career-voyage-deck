@@ -1,64 +1,124 @@
 name: CI/CD Pipeline
-# ... (previous parts remain the same)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-    - name: Setup SSH and Deploy
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        # ... (previous SSH setup remains the same)
-        
-        echo "Starting application using Docker Compose..."
-        ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
-        cd /app
-        DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose up -d --build
-        
-        # Wait for services to start
-        echo "Waiting for services to start..."
-        sleep 30
-        
-        # Check all container statuses
-        echo "Checking container statuses..."
-        docker-compose ps
-        
-        # Check nginx container specifically
-        echo "Checking nginx logs..."
-        docker-compose logs nginx
-        
-        # More detailed verification
-        echo "Performing detailed service verification..."
-        if docker-compose ps | grep "nginx" | grep -q "Up"; then
-          echo "Nginx service is running"
-        else
-          echo "Nginx service is not running. Checking for errors..."
-          docker-compose logs nginx
-          docker-compose ps
-          exit 1
-        fi
-        
-        # Check if port 80 is being listened to
-        echo "Checking port 80..."
-        if netstat -tuln | grep -q ":80 "; then
-          echo "Port 80 is being listened to"
-        else
-          echo "Port 80 is not being listened to. Checking for conflicts..."
-          sudo lsof -i :80
-          exit 1
-        fi
-        
-        # Verify nginx configuration
-        echo "Verifying nginx configuration..."
-        docker-compose exec -T nginx nginx -t || {
-          echo "Nginx configuration test failed"
-          exit 1
-        }
-        
-        # Check actual HTTP response
-        echo "Checking HTTP response..."
-        curl -I http://localhost || {
-          echo "Could not get HTTP response from nginx"
-          exit 1
-        }
-        '
-        
-    - name: Send Deployment Status Email
-      if: always()
-      # ... (email notification remains the same)
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build
+        run: |
+          npm run build
+          ls -la dist/
+          
+      - name: Setup SSH and Deploy
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "Setting up SSH..."
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "Adding known hosts..."
+          ssh-keyscan -H "${{ secrets.SERVER_IP }}" >> ~/.ssh/known_hosts
+          
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" echo "SSH connection successful" || { echo "SSH failed"; exit 1; }
+          
+          echo "Setting up server environment..."
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+            sudo mkdir -p /app
+            sudo chown -R $USER:$USER /app
+            sudo usermod -aG docker $USER
+            sudo chown root:docker /var/run/docker.sock
+            sudo chmod 660 /var/run/docker.sock
+            sudo systemctl restart docker
+          '
+          
+          echo "Copying files to server..."
+          scp -i ~/.ssh/deploy_key \
+            docker-compose.yml Dockerfile nginx.conf init.sql .env package.json package-lock.json \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/"
+          
+          scp -i ~/.ssh/deploy_key -r dist/* "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/"
+          
+          echo "Starting application using Docker Compose..."
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
+            cd /app
+            DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose down
+            DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose up -d --build
+            
+            # Wait for services to start
+            echo "Waiting for services to start..."
+            sleep 30
+            
+            # Check container statuses
+            echo "Checking container statuses..."
+            docker-compose ps
+            
+            # Check nginx logs
+            echo "Checking nginx logs..."
+            docker-compose logs nginx
+            
+            # Verify nginx is running
+            if docker-compose ps | grep "nginx" | grep -q "Up"; then
+              echo "Nginx service is running"
+            else
+              echo "Nginx service failed to start. Checking logs..."
+              docker-compose logs nginx
+              docker-compose ps
+              exit 1
+            fi
+            
+            # Check port 80
+            echo "Checking port 80..."
+            if netstat -tuln | grep -q ":80 "; then
+              echo "Port 80 is being listened to"
+            else
+              echo "Port 80 is not being listened to"
+              sudo lsof -i :80
+              exit 1
+            fi
+          '
+      
+      - name: Send Deployment Status Email
+        if: always()
+        run: |
+          if [ -n "$RESEND_API_KEY" ]; then
+            curl -X POST \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            https://api.resend.com/emails \
+            -d '{
+              "from": "notifications@hassan-adam.com",
+              "to": "haskhr@hotmail.com",
+              "subject": "Deployment Status: ${{ job.status }}",
+              "html": "Deployment Status: ${{ job.status }}<br>Repository: ${{ github.repository }}<br>Commit: ${{ github.sha }}<br>Triggered by: ${{ github.actor }}"
+            }'
+          else
+            echo "RESEND_API_KEY not set, skipping email notification"
+          fi
