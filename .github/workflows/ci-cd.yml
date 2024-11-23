@@ -17,8 +17,9 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -32,6 +33,9 @@ jobs:
         run: |
           npm run build
           ls -la dist/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Setup SSH
         run: |
@@ -62,6 +66,7 @@ jobs:
           # Create deployment directory
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
             sudo mkdir -p /app
+            sudo mkdir -p /app/dist
             sudo chown -R $USER:$USER /app
             sudo usermod -aG docker $USER
             sudo chown root:docker /var/run/docker.sock
@@ -75,33 +80,56 @@ jobs:
             docker-compose.yml Dockerfile nginx.conf .env \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
           
-          # Copy dist directory
+          # Ensure dist directory exists and copy it
           echo "Copying dist directory..."
-          scp -i ~/.ssh/deploy_key -r dist \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist'
+          scp -i ~/.ssh/deploy_key -r dist/* \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
           
           # Deploy application
           echo "Deploying application..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
             cd /app
             
-            # Clean up
+            # Clean up existing containers
+            echo "Cleaning up existing containers..."
             docker-compose down -v || true
             
+            # Remove old images
+            echo "Removing old images..."
+            docker system prune -af || true
+            
             # Start services
+            echo "Starting services..."
             DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose up -d --build --force-recreate
             
-            # Wait for services
-            echo "Waiting for services to start..."
+            # Wait for services to initialize
+            echo "Waiting for services to initialize..."
             sleep 30
             
-            # Check status
-            echo "Checking service status..."
+            # Check container status
+            echo "Checking container status..."
             docker-compose ps
             
-            # Check logs
-            echo "Checking service logs..."
+            # Display container logs
+            echo "Container logs:"
             docker-compose logs
+            
+            # Check nginx configuration
+            echo "Checking nginx configuration..."
+            docker exec $(docker-compose ps -q nginx) nginx -t || true
+            
+            # Check if services are responding
+            echo "Checking service health..."
+            curl -v http://localhost || true
+            
+            # Display running containers
+            echo "Running containers:"
+            docker ps -a
+            
+            # Check disk space
+            echo "Checking disk space..."
+            df -h
           '
 
       - name: Send Deployment Status Email
@@ -121,3 +149,17 @@ jobs:
           else
             echo "RESEND_API_KEY not set, skipping email notification"
           fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Remove SSH key
+          rm -f ~/.ssh/deploy_key
+          # Clean up any remaining Docker resources
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+            cd /app
+            if [ -f "docker-compose.yml" ]; then
+              docker-compose down -v || true
+            fi
+            docker system prune -af || true
+          ' || true
