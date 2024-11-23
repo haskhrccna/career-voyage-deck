@@ -82,12 +82,11 @@ jobs:
         sudo lsof -i :80 | awk '{print \$2}' | grep -v PID | xargs -r sudo kill -9
         "
         
-        echo "Starting application using Docker Compose with platform specification..."
+         # In your GitHub Actions workflow
+        echo "Starting application using Docker Compose..."
         ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" '
         cd /app
-        # Build images with platform specification
-        docker buildx build --platform linux/arm64 -t app:latest --load .
-        docker-compose up -d --build
+        DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose up -d --build
         '
         
         echo "Verifying Nginx service is up and running..."
