@@ -33,16 +33,9 @@ services:
       - ./dist:/usr/share/nginx/html:ro
     networks:
       - app_network
-    restart: always
     depends_on:
-      app:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "nginx", "-t"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      - app
+    restart: always
   
   db:
     image: postgres:15
