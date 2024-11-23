@@ -63,15 +63,39 @@ jobs:
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment directory
+          # Setup server
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+            # Create app directory
             sudo mkdir -p /app
-            sudo mkdir -p /app/dist
             sudo chown -R $USER:$USER /app
+            
+            # Setup Docker permissions
             sudo usermod -aG docker $USER
-            sudo chown root:docker /var/run/docker.sock
-            sudo chmod 660 /var/run/docker.sock
-            sudo systemctl restart docker
+            sudo chmod 666 /var/run/docker.sock
+            
+            # Stop any process using port 80
+            echo "Checking and stopping processes on port 80..."
+            sudo lsof -t -i:80 | xargs -r sudo kill -9
+            
+            # Stop Apache2 if it exists and is running
+            if systemctl is-active --quiet apache2; then
+              echo "Stopping Apache2..."
+              sudo systemctl stop apache2
+              sudo systemctl disable apache2
+            fi
+            
+            # Stop Nginx if it exists and is running
+            if systemctl is-active --quiet nginx; then
+              echo "Stopping Nginx..."
+              sudo systemctl stop nginx
+              sudo systemctl disable nginx
+            fi
+            
+            # Double check port 80 is free
+            if lsof -Pi :80 -sTCP:LISTEN -t >/dev/null ; then
+              echo "Port 80 is still in use. Forcing cleanup..."
+              sudo lsof -i :80 | awk "NR!=1 {print $2}" | xargs -r sudo kill -9
+            fi
           '
           
           # Copy files
@@ -80,56 +104,58 @@ jobs:
             docker-compose.yml Dockerfile nginx.conf .env \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
           
-          # Ensure dist directory exists and copy it
+          # Copy dist directory
           echo "Copying dist directory..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist'
           scp -i ~/.ssh/deploy_key -r dist/* \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
           
-          # Deploy application
+          # Deploy
           echo "Deploying application..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
             cd /app
             
-            # Clean up existing containers
-            echo "Cleaning up existing containers..."
+            # Stop and remove existing containers
             docker-compose down -v || true
             
-            # Remove old images
-            echo "Removing old images..."
+            # Remove all stopped containers and unused images
             docker system prune -af || true
+            
+            # Clean up any remaining Docker resources
+            docker container prune -f
+            docker network prune -f
+            docker volume prune -f
+            
+            # Verify port 80 is free
+            echo "Verifying port 80 is free..."
+            if lsof -Pi :80 -sTCP:LISTEN -t >/dev/null ; then
+              echo "Port 80 is still in use. Final cleanup attempt..."
+              sudo lsof -i :80 | awk "NR!=1 {print $2}" | xargs -r sudo kill -9
+            fi
             
             # Start services
             echo "Starting services..."
-            DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker-compose up -d --build --force-recreate
+            docker-compose up -d --build --force-recreate
             
-            # Wait for services to initialize
-            echo "Waiting for services to initialize..."
-            sleep 30
+            # Wait for services to start
+            echo "Waiting for services to start..."
+            sleep 10
             
             # Check container status
-            echo "Checking container status..."
-            docker-compose ps
+            echo "Container status:"
+            docker ps -a
             
-            # Display container logs
+            # Check logs
             echo "Container logs:"
             docker-compose logs
             
-            # Check nginx configuration
-            echo "Checking nginx configuration..."
-            docker exec $(docker-compose ps -q nginx) nginx -t || true
+            # Check port usage
+            echo "Port usage:"
+            sudo lsof -i :80
             
-            # Check if services are responding
-            echo "Checking service health..."
-            curl -v http://localhost || true
-            
-            # Display running containers
-            echo "Running containers:"
-            docker ps -a
-            
-            # Check disk space
-            echo "Checking disk space..."
-            df -h
+            # Test nginx
+            echo "Testing nginx..."
+            curl -v http://localhost
           '
 
       - name: Send Deployment Status Email
