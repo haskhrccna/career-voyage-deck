@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:80"  # Changed to use port 8080 externally
+      - "80:80"
     networks:
       - app_network
     restart: always
@@ -14,8 +14,12 @@ services:
       - ./dist:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - nginx_logs:/var/log/nginx
-    command: [nginx-debug, '-g', 'daemon off;']
-  
+    environment:
+      - NGINX_PORT=80
+    command: >
+      /bin/sh -c "nginx -t &&
+      nginx -g 'daemon off;'"
+
   db:
     container_name: postgres_db
     image: postgres:15
