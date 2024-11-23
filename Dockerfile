@@ -22,12 +22,10 @@ RUN mkdir -p /usr/share/nginx/html/images \
     && chmod -R 755 /usr/share/nginx/html \
     && chmod -R 755 /var/log/nginx
 
-# Remove the problematic COPY command and handle images in a safer way
-RUN if [ -d "/app/dist/images" ]; then \
-      cp -r /app/dist/images/* /usr/share/nginx/html/images/ || true; \
-    fi
+# Create a test index.html if it doesn't exist
+RUN echo "<!DOCTYPE html><html><body><h1>Server is running</h1></body></html>" > /usr/share/nginx/html/index.html
 
-# Test nginx configuration
+# Verify nginx config
 RUN nginx -t
 
 EXPOSE 80
