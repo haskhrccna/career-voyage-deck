@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      platforms:
+        - linux/arm64/v8
     expose:
       - "80"
     volumes:
@@ -17,6 +19,7 @@ services:
   
   nginx:
     image: nginx:stable
+    platform: linux/arm64/v8
     ports:
       - "80:80"
     volumes:
@@ -29,6 +32,7 @@ services:
   
   db:
     image: postgres:15
+    platform: linux/arm64/v8
     expose:
       - "5432"
     environment:
