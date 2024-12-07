@@ -74,6 +74,19 @@ jobs:
           cat << 'EOSSH' > deploy_remote.sh
           cd /app
 
+          # Function to safely remove a directory and its contents
+          safe_remove_directory() {
+            local dir_path="$1"
+            if [ -d "$dir_path" ]; then
+              echo "Cleaning up directory: $dir_path"
+              # First remove contents
+              find "$dir_path" -mindepth 1 -delete
+              # Then remove the directory itself
+              rmdir "$dir_path"
+              echo "Successfully removed directory: $dir_path"
+            fi
+          }
+
           # Ensure proper permissions
           sudo chown -R $USER:$USER .
           chmod 755 .
@@ -106,6 +119,9 @@ jobs:
             exit 1
           fi
 
+          # Clean up temporary directory if it exists
+          safe_remove_directory "/app/tmp"
+
           echo "Deployment completed successfully"
           EOSSH
 
@@ -121,11 +137,8 @@ jobs:
           echo "Moving files to final location and executing deployment..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
             cd /app && \
-            mv tmp/* . && \
-            rmdir tmp && \
-            chmod +x deploy_remote.sh && \
-            chmod 644 docker-compose.yml Dockerfile nginx.conf .env && \
-            ./deploy_remote.sh
+            cp -a tmp/* . && \
+            bash deploy_remote.sh
           "
 
       - name: Cleanup
