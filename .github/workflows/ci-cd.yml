@@ -1,29 +1,31 @@
-# This workflow handles the complete CI/CD pipeline for your application
-# It includes building, testing, and deploying your application to your server
+# Comprehensive CI/CD workflow for React application deployment
+# This workflow handles building, testing, and deploying the application
+# with proper verification steps and error handling
 
 name: CI/CD Pipeline
 
-# Define when this workflow should run
+# Define workflow triggers
 on:
-  # Run on pushes to main branch
+  # Trigger on pushes to main branch
   push:
     branches:
       - main
-  # Run on pull requests targeting main branch
+  # Trigger on pull requests targeting main branch
   pull_request:
     branches:
       - main
 
-# Environment variables used throughout the workflow
+# Define environment variables used throughout the workflow
 env:
   NODE_VERSION: '20'
   DEPLOY_PATH: '/app'
+  NGINX_CONTAINER: 'web_app'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
-    # Define environment variables, using GitHub secrets for sensitive data
+    # Define environment variables, including secrets
     env:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -53,9 +55,15 @@ jobs:
       - name: Build
         run: |
           npm run build
+          # Verify build output
+          if [ ! -d "dist" ]; then
+            echo "Error: Build failed - dist directory not found"
+            exit 1
+          fi
+          echo "Build output contents:"
           ls -la dist/
 
-      # Step 5: Create necessary configuration files
+      # Step 5: Create configuration files
       - name: Create configuration files
         run: |
           # Create environment file
@@ -69,7 +77,7 @@ jobs:
           PORT=3000
           EOF
 
-          # Create Nginx configuration
+          # Create Nginx configuration for SPA
           cat << 'EOF' > nginx.conf
           user nginx;
           worker_processes auto;
@@ -84,12 +92,15 @@ jobs:
               include /etc/nginx/mime.types;
               default_type application/octet-stream;
 
-              log_format detailed '$remote_addr - $remote_user [$time_local] '
-                               '"$request" $status $body_bytes_sent '
-                               '"$http_referer" "$http_user_agent" '
-                               'file: "$request_filename" root: "$document_root"';
+              # Enhanced logging for debugging
+              log_format debug_log '$remote_addr - $remote_user [$time_local] '
+                                '"$request" $status $body_bytes_sent '
+                                '"$http_referer" "$http_user_agent" '
+                                'rt=$request_time uct="$upstream_connect_time" '
+                                'uht="$upstream_header_time" urt="$upstream_response_time" '
+                                'file="$request_filename" root="$document_root"';
 
-              access_log /var/log/nginx/access.log detailed;
+              access_log /var/log/nginx/access.log debug_log;
               error_log /var/log/nginx/error.log debug;
 
               sendfile on;
@@ -98,21 +109,31 @@ jobs:
               keepalive_timeout 65;
               types_hash_max_size 2048;
 
+              # Gzip Settings
+              gzip on;
+              gzip_disable "msie6";
+              gzip_vary on;
+              gzip_proxied any;
+              gzip_comp_level 6;
+              gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+
               server {
                   listen 80;
                   server_name localhost;
                   
                   root /usr/share/nginx/html;
                   index index.html;
+                  
+                  # Security headers
+                  add_header X-Frame-Options "SAMEORIGIN" always;
+                  add_header X-XSS-Protection "1; mode=block" always;
+                  add_header X-Content-Type-Options "nosniff" always;
+                  add_header Referrer-Policy "no-referrer-when-unsafe" always;
+                  add_header Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: data: blob:;" always;
 
                   location / {
                       try_files $uri $uri/ /index.html;
-                      
-                      add_header X-Frame-Options "SAMEORIGIN" always;
-                      add_header X-XSS-Protection "1; mode=block" always;
-                      add_header X-Content-Type-Options "nosniff" always;
-                      add_header Referrer-Policy "no-referrer-when-unsafe" always;
-                      add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+                      add_header Cache-Control "no-store, no-cache, must-revalidate";
                   }
 
                   location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
@@ -120,7 +141,12 @@ jobs:
                       add_header Cache-Control "public, no-transform";
                   }
 
-                  error_page 404 /404.html;
+                  location ~* \.js$ {
+                      default_type application/javascript;
+                      add_header Cache-Control "no-cache";
+                  }
+
+                  error_page 404 /index.html;
                   error_page 500 502 503 504 /50x.html;
               }
           }
@@ -139,7 +165,7 @@ jobs:
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment script
+          # Create comprehensive deployment script
           cat << 'EOSSH' > deploy.sh
           #!/bin/bash
           set -e
@@ -154,71 +180,127 @@ jobs:
           log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
           log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+          # Function to verify build files
+          verify_build_files() {
+              log_info "Verifying build files..."
+              
+              if [ ! -f "/app/dist/index.html" ]; then
+                  log_error "index.html not found in build output!"
+                  return 1
+              fi
+              
+              # Check for JavaScript files
+              if ! ls /app/dist/*.js >/dev/null 2>&1; then
+                  log_error "No JavaScript bundles found in build output!"
+                  return 1
+              fi
+              
+              log_info "Build files verified successfully"
+              return 0
+          }
+
           # Function to check Docker permissions
           setup_docker() {
-            log_info "Setting up Docker permissions..."
-            if ! groups | grep -q docker; then
-              sudo usermod -aG docker $USER
-              log_warn "Added user to docker group. Using sudo for this session."
-              return 1
-            fi
-            return 0
+              log_info "Setting up Docker permissions..."
+              if ! groups | grep -q docker; then
+                  sudo usermod -aG docker $USER
+                  log_warn "Added user to docker group. Using sudo for this session."
+                  return 1
+              fi
+              return 0
           }
 
           # Function to run Docker commands
           docker_cmd() {
-            if setup_docker; then
-              docker "$@"
-            else
-              sudo docker "$@"
-            fi
+              if setup_docker; then
+                  docker "$@"
+              else
+                  sudo docker "$@"
+              fi
           }
 
           # Function to run Docker Compose commands
           docker_compose_cmd() {
-            if setup_docker; then
-              docker-compose "$@"
-            else
-              sudo docker-compose "$@"
-            fi
+              if setup_docker; then
+                  docker-compose "$@"
+              else
+                  sudo docker-compose "$@"
+              fi
           }
 
-          # Deploy application
-          deploy_app() {
-            cd /app
-
-            log_info "Stopping existing containers..."
-            docker_compose_cmd down -v || true
-            docker_cmd system prune -af --force || true
-
-            log_info "Starting services..."
-            if ! docker_compose_cmd up -d --build --force-recreate; then
-              log_error "Failed to start services"
-              docker_compose_cmd logs
-              exit 1
-            fi
-
-            log_info "Setting up web files..."
-            docker exec web_app /bin/sh -c "
-              chown -R nginx:nginx /usr/share/nginx/html
-              find /usr/share/nginx/html -type d -exec chmod 755 {} \;
-              find /usr/share/nginx/html -type f -exec chmod 644 {} \;
-            "
-
-            log_info "Verifying deployment..."
-            sleep 10
-            
-            if ! curl -sSf http://localhost:80 > /dev/null; then
-              log_error "Deployment verification failed"
+          # Function to verify web server
+          verify_web_server() {
+              log_info "Verifying web server..."
+              
+              # Check Nginx configuration
+              if ! docker exec web_app nginx -t; then
+                  log_error "Nginx configuration test failed!"
+                  return 1
+              fi
+              
+              # Wait for service to be ready
+              local max_attempts=30
+              local attempt=1
+              
+              while [ $attempt -le $max_attempts ]; do
+                  if curl -s -f http://localhost:80 > /dev/null; then
+                      log_info "Web server is responding"
+                      return 0
+                  fi
+                  log_warn "Attempt $attempt/$max_attempts: Waiting for web server..."
+                  sleep 2
+                  attempt=$((attempt + 1))
+              done
+              
+              log_error "Web server failed to respond"
               docker_compose_cmd logs web_app
-              exit 1
-            fi
-
-            log_info "Deployment completed successfully"
+              return 1
           }
 
-          # Main execution
-          deploy_app
+          # Main deployment function
+          deploy_application() {
+              cd /app
+              
+              log_info "Starting deployment process..."
+              
+              # Verify build files first
+              verify_build_files || exit 1
+              
+              # Stop existing containers
+              log_info "Stopping existing containers..."
+              docker_compose_cmd down -v || true
+              docker_cmd system prune -af --force || true
+              
+              # Ensure proper permissions
+              log_info "Setting up permissions..."
+              sudo chown -R $USER:$USER .
+              chmod 755 .
+              chmod 600 .env
+              
+              # Start services
+              log_info "Starting services..."
+              if ! docker_compose_cmd up -d --build --force-recreate; then
+                  log_error "Failed to start services"
+                  docker_compose_cmd logs
+                  exit 1
+              fi
+              
+              # Copy build files to container
+              log_info "Setting up web files..."
+              docker exec web_app /bin/sh -c "
+                  chown -R nginx:nginx /usr/share/nginx/html
+                  find /usr/share/nginx/html -type d -exec chmod 755 {} \;
+                  find /usr/share/nginx/html -type f -exec chmod 644 {} \;
+              "
+              
+              # Verify deployment
+              verify_web_server || exit 1
+              
+              log_info "Deployment completed successfully"
+          }
+
+          # Execute deployment
+          deploy_application
           EOSSH
 
           # Make deployment script executable
@@ -234,6 +316,8 @@ jobs:
 
           # Copy application files
           echo "Copying application files..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p ${{ env.DEPLOY_PATH }}/dist"
+          
           scp -i ~/.ssh/deploy_key -r \
             dist/* \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_PATH }}/dist/
