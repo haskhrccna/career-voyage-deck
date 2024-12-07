@@ -1,4 +1,5 @@
 name: CI/CD Pipeline
+
 on:
   push:
     branches:
@@ -29,151 +30,160 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+        
+      - name: Run tests
+        run: npm test
+        continue-on-error: false
       
       - name: Build
         run: |
           npm run build
           ls -la dist/
+          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Setup SSH
         run: |
-          # Create .ssh directory
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
-          # Write the private key to a file
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
-          # Add the host key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          
-          # Debug SSH setup (optional)
-          ls -la ~/.ssh
-          echo "SSH directory contents:"
-          ls -la ~/.ssh/
+
       - name: Test SSH Connection
         run: |
-          echo "Testing SSH connection..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
-      - name: Deploy
+          if ! ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'; then
+            echo "Failed to establish SSH connection"
+            exit 1
+          fi
+
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            cd /app
+          # Create deployment script
+          cat << 'EOF' > deploy.sh
+          #!/bin/bash
+          set -e
+
+          echo "Starting deployment process..."
+          
+          # Function to check if port 80 is in use
+          check_port_80() {
+            if sudo lsof -i :80 >/dev/null 2>&1; then
+              echo "Port 80 is in use. Attempting to free it..."
+              sudo lsof -t -i:80 | xargs -r sudo kill -9
+              sleep 5
+            fi
+          }
+
+          # Function to wait for container health
+          wait_for_container() {
+            local container_name=$1
+            local max_attempts=30
+            local attempt=1
+
+            while [ $attempt -le $max_attempts ]; do
+              if docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null | grep -q "healthy"; then
+                echo "$container_name is healthy"
+                return 0
+              fi
+              echo "Waiting for $container_name to be healthy (attempt $attempt/$max_attempts)..."
+              sleep 10
+              attempt=$((attempt + 1))
+            done
             
-            echo "Stopping and removing containers..."
-            docker-compose down -v
-            docker system prune -af
-            
-            echo "Checking running containers..."
-            echo "1. Current running containers:"
-            docker ps -a
-            
-            echo "Checking port 80..."
-            sudo netstat -tulpn | grep :80 || true
-            
-            echo "Killing any process on port 80..."
-            sudo lsof -t -i:80 | xargs -r sudo kill -9
-            echo "2. Stopping all containers:"
+            echo "$container_name failed to become healthy"
+            docker logs $container_name
+            return 1
+          }
+
+          cd /app
+
+          # Backup current deployment
+          if [ -d "dist" ]; then
+            mv dist dist_backup
+          fi
+
+          # Clean up Docker resources
+          echo "Cleaning up Docker resources..."
+          docker-compose down -v || true
+          docker system prune -af --volumes || true
+
+          # Check and free port 80
+          check_port_80
+
+          # Start containers
+          echo "Starting containers..."
+          docker-compose up -d --build --force-recreate
+
+          # Wait for web_app container to be healthy
+          if ! wait_for_container "web_app"; then
+            echo "Deployment failed - rolling back..."
             docker-compose down
-            docker stop $(docker ps -a -q) || true
-            
-            echo "Starting containers..."
-            docker-compose up -d --build --force-recreate
-            echo "3. Checking port 80:"
-            sudo netstat -tulpn | grep :80 || true
-            
-            echo "Waiting for containers to start..."
-            sleep 20
-            echo "4. Checking and killing any process using port 80:"
-            sudo lsof -i :80 || true
-            sudo fuser -k 80/tcp || true
-            
-            echo "Container status:"
-            docker ps -a
-            echo "5. Removing old containers and images:"
-            docker system prune -af
-          '
-          
-          echo "6. Copying files to server..."
+            [ -d "dist_backup" ] && mv dist_backup dist
+            exit 1
+          fi
+
+          # Cleanup backup if deployment successful
+          [ -d "dist_backup" ] && rm -rf dist_backup
+
+          echo "Deployment completed successfully"
+          EOF
+
+          # Copy deployment files
+          echo "Copying deployment files..."
           scp -i ~/.ssh/deploy_key \
-            docker-compose.yml Dockerfile nginx.conf .env \
+            docker-compose.yml Dockerfile nginx.conf .env deploy.sh \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
-          
-          echo "7. Copying dist directory..."
+
+          # Copy dist directory
+          echo "Copying dist directory..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist'
           scp -i ~/.ssh/deploy_key -r dist/* \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
-          
-          echo "8. Starting services..."
+
+          # Execute deployment
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            cd /app
-            
-            echo "Nginx container logs:"
-            docker logs web_app
-            docker-compose --verbose up -d --build --force-recreate
-            
-            echo "Nginx configuration test:"
-            docker exec web_app nginx -t
-            echo "9. Waiting for services:"
-            sleep 15
-            
-            echo "Nginx process status:"
-            docker exec web_app ps aux | grep nginx
-            echo "10. Container status:"
-            docker ps -a
-            
-            echo "Container network info:"
-            docker inspect web_app | grep IPAddress
-            echo "11. Container logs:"
-            docker-compose logs
-            
-            echo "Testing localhost access:"
-            docker exec web_app curl -v http://localhost:80
-            echo "12. Testing nginx:"
-            curl -v http://localhost:80/test || true
-            
-            echo "Testing external access:"
-            curl -v http://localhost:80
-            echo "13. Container network info:"
-            docker network inspect app_network || true
-            
-            echo "Complete container logs:"
-            docker-compose logs
-            echo "14. Container IP:"
-            docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" web_app
+            cd /app && 
+            chmod +x deploy.sh && 
+            ./deploy.sh
           '
+
       - name: Send Deployment Status Email
         if: always()
         run: |
           if [ -n "$RESEND_API_KEY" ]; then
+            DEPLOY_STATUS="${{ job.status }}"
+            DEPLOY_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            
             curl -X POST \
-            -H "Authorization: Bearer $RESEND_API_KEY" \
-            -H "Content-Type: application/json" \
-            https://api.resend.com/emails \
-            -d '{
-              "from": "notifications@hassan-adam.com",
-              "to": "haskhr@hotmail.com",
-              "subject": "Deployment Status: ${{ job.status }}",
-              "html": "Deployment Status: ${{ job.status }}<br>Repository: ${{ github.repository }}<br>Commit: ${{ github.sha }}<br>Triggered by: ${{ github.actor }}"
-            }'
+              -H "Authorization: Bearer $RESEND_API_KEY" \
+              -H "Content-Type: application/json" \
+              https://api.resend.com/emails \
+              -d '{
+                "from": "notifications@hassan-adam.com",
+                "to": "haskhr@hotmail.com",
+                "subject": "Deployment Status: '"$DEPLOY_STATUS"'",
+                "html": "
+                  <h2>Deployment Status: '"$DEPLOY_STATUS"'</h2>
+                  <p><strong>Repository:</strong> '"${{ github.repository }}"'</p>
+                  <p><strong>Branch:</strong> '"${GITHUB_REF#refs/heads/}"'</p>
+                  <p><strong>Commit:</strong> '"${{ github.sha }}"'</p>
+                  <p><strong>Triggered by:</strong> '"${{ github.actor }}"'</p>
+                  <p><strong>Deployment Time:</strong> '"$DEPLOY_TIME"'</p>
+                "
+              }'
           else
             echo "RESEND_API_KEY not set, skipping email notification"
           fi
+
       - name: Cleanup
         if: always()
         run: |
-          # Remove SSH key
           rm -f ~/.ssh/deploy_key
-          # Clean up any remaining Docker resources
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
             cd /app
-            if [ -f "docker-compose.yml" ]; then
-              docker-compose down -v || true
-            fi
+            docker-compose down -v || true
             docker system prune -af || true
           ' || true
