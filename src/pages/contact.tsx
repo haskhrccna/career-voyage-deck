@@ -1,20 +1,23 @@
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from '../components/ui/use-toast';
 
-const Contact = () => {
+const ContactPage: React.FC = () => {
+  const { t } = useLanguage();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     try {
       // Add your form submission logic here
       toast({
-        title: "Message sent!",
-        description: "We'll get back to you as soon as possible.",
+        title: t('contact.successMessage'),
+        description: t('contact.successDetail'),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
+        title: t('contact.errorMessage'),
+        description: t('contact.errorDetail'),
         variant: "destructive",
       });
     }
@@ -22,12 +25,15 @@ const Contact = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-white mb-6">Contact Us</h1>
+      <h1 className="text-4xl font-bold text-white mb-6">
+        {t('contact.title')}
+      </h1>
+      
       <div className="max-w-2xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="name" className="text-white">
-              Name
+              {t('contact.nameLabel')}
             </label>
             <input
               type="text"
@@ -40,7 +46,7 @@ const Contact = () => {
           
           <div className="space-y-2">
             <label htmlFor="email" className="text-white">
-              Email
+              {t('contact.emailLabel')}
             </label>
             <input
               type="email"
@@ -53,7 +59,7 @@ const Contact = () => {
           
           <div className="space-y-2">
             <label htmlFor="message" className="text-white">
-              Message
+              {t('contact.messageLabel')}
             </label>
             <textarea
               id="message"
@@ -68,7 +74,7 @@ const Contact = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
           >
-            Send Message
+            {t('contact.submitButton')}
           </button>
         </form>
       </div>
@@ -76,4 +82,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default ContactPage;
