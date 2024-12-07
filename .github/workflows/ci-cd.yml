@@ -17,32 +17,55 @@ jobs:
       SERVER_USER: ${{ secrets.SERVER_USER }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
     steps:
-      # ... (previous steps remain the same) ...
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Create Environment File
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
         run: |
-          cat << EOF > .env
-          # Database Configuration
-          POSTGRES_USER=${POSTGRES_USER}
-          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-          POSTGRES_DB=${POSTGRES_DB}
-          
-          # Database Connection URL
-          DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
-          
-          # Application Configuration
-          NODE_ENV=production
-          PORT=3000
-          EOF
-          
-          # Show the generated .env file without sensitive values
-          echo "Generated .env file (with secrets hidden):"
-          cat .env | sed 's/=.*/=****/'
+          npm run build
+          ls -la dist/
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Prepare Server Directory Structure
+        run: |
+          # Create a separate script for SSH commands
+          cat << 'EOSSH' > setup_server.sh
+          # Create application directory if it doesn't exist
+          sudo mkdir -p /app
+
+          # Set ownership of the app directory to our user
+          sudo chown -R $USER:$USER /app
+
+          # Set proper directory permissions
+          sudo chmod 755 /app
+
+          # Create necessary subdirectories
+          mkdir -p /app/dist
+
+          echo "Directory permissions:"
+          ls -la /app
+          EOSSH
+
+          # Execute the script over SSH
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash -s' < setup_server.sh
 
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -120,6 +143,7 @@ jobs:
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
 
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /app && bash deploy_remote.sh"
+
 
       - name: Cleanup
         if: always()
