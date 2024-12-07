@@ -1,43 +1,79 @@
-import React, { createContext, useContext, useState } from 'react';
-import { translations, TranslationKey } from '@/translations';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { translations, Language, getTranslation } from '../translations';
 
-type Language = TranslationKey;
-
+// Define the shape of our context
 interface LanguageContextType {
-  language: Language;
+  currentLanguage: Language;
   setLanguage: (lang: Language) => void;
-  t: (path: string) => string;
+  t: (key: string) => string;
+  availableLanguages: Language[];
 }
 
+// Create the context with a default value
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('en');
+interface LanguageProviderProps {
+  children: ReactNode;
+}
 
-  const t = (path: string): string => {
-    const keys = path.split('.');
-    let current: any = translations[language];
-    
-    for (const key of keys) {
-      if (current[key] === undefined) {
-        console.warn(`Translation missing for key: ${path} in language: ${language}`);
-        return path;
-      }
-      current = current[key];
+/**
+ * LanguageProvider component that manages the application's language state
+ * and provides translation functionality to all child components
+ */
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  // Initialize language from localStorage or browser preference
+  const getInitialLanguage = (): Language => {
+    const savedLanguage = localStorage.getItem('preferredLanguage') as Language;
+    if (savedLanguage && Object.keys(translations).includes(savedLanguage)) {
+      return savedLanguage;
     }
     
-    return current;
+    // Check browser language
+    const browserLang = navigator.language.split('-')[0] as Language;
+    if (Object.keys(translations).includes(browserLang)) {
+      return browserLang;
+    }
+    
+    return 'en'; // Default to English
+  };
+
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(getInitialLanguage);
+
+  // Update localStorage when language changes
+  useEffect(() => {
+    localStorage.setItem('preferredLanguage', currentLanguage);
+    // Update document language for accessibility
+    document.documentElement.lang = currentLanguage;
+  }, [currentLanguage]);
+
+  const setLanguage = (lang: Language) => {
+    if (Object.keys(translations).includes(lang)) {
+      setCurrentLanguage(lang);
+    } else {
+      console.warn(`Language ${lang} is not supported`);
+    }
+  };
+
+  // Translation function that components will use
+  const t = (key: string): string => {
+    return getTranslation(currentLanguage, key);
+  };
+
+  const value = {
+    currentLanguage,
+    setLanguage,
+    t,
+    availableLanguages: Object.keys(translations) as Language[],
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      <div dir={language === 'ar' ? 'rtl' : 'ltr'}>
-        {children}
-      </div>
+    <LanguageContext.Provider value={value}>
+      {children}
     </LanguageContext.Provider>
   );
 };
 
+// Custom hook for using the language context
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
