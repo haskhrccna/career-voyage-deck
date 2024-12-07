@@ -17,129 +17,109 @@ jobs:
       SERVER_USER: ${{ secrets.SERVER_USER }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # ... (previous steps remain the same) ...
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build
+      - name: Create Environment File
         run: |
-          npm run build
-          ls -la dist/
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-
-      - name: Prepare Server Directory Structure
-        run: |
-          # Create a separate script for SSH commands
-          cat << 'EOSSH' > setup_server.sh
-          # Create application directory if it doesn't exist
-          sudo mkdir -p /app
-
-          # Set ownership of the app directory to our user
-          sudo chown -R $USER:$USER /app
-
-          # Set proper directory permissions
-          sudo chmod 755 /app
-
-          # Create necessary subdirectories
-          mkdir -p /app/dist
-
-          echo "Directory permissions:"
-          ls -la /app
-          EOSSH
-
-          # Execute the script over SSH
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash -s' < setup_server.sh
+          cat << EOF > .env
+          # Database Configuration
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          POSTGRES_DB=${POSTGRES_DB}
+          
+          # Database Connection URL
+          DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
+          
+          # Application Configuration
+          NODE_ENV=production
+          PORT=3000
+          EOF
+          
+          # Show the generated .env file without sensitive values
+          echo "Generated .env file (with secrets hidden):"
+          cat .env | sed 's/=.*/=****/'
 
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment script
+          # Create deployment script with environment variable handling
           cat << 'EOSSH' > deploy_remote.sh
           cd /app
-
-          # Function to safely remove a directory and its contents
-          safe_remove_directory() {
-            local dir_path="$1"
-            if [ -d "$dir_path" ]; then
-              echo "Cleaning up directory: $dir_path"
-              # First remove contents
-              find "$dir_path" -mindepth 1 -delete
-              # Then remove the directory itself
-              rmdir "$dir_path"
-              echo "Successfully removed directory: $dir_path"
-            fi
-          }
-
+          
           # Ensure proper permissions
           sudo chown -R $USER:$USER .
           chmod 755 .
-
+          
+          # Make environment file readable only by owner
+          chmod 600 .env
+          
+          # Validate environment variables
+          if [ ! -s .env ]; then
+            echo "Error: .env file is empty or missing"
+            exit 1
+          fi
+          
+          # Source environment variables
+          set -a
+          source .env
+          set +a
+          
+          # Validate required database variables
+          required_vars=("POSTGRES_USER" "POSTGRES_PASSWORD" "POSTGRES_DB")
+          for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+              echo "Error: $var is not set"
+              exit 1
+            fi
+          done
+          
           # Stop and remove existing containers
           docker-compose down -v || true
           docker system prune -af || true
-
-          # Check and free port 80 if needed
-          if sudo lsof -i :80 >/dev/null 2>&1; then
-            echo "Freeing port 80..."
-            sudo lsof -t -i:80 | xargs -r sudo kill -9
-          fi
-
+          
           # Start containers with proper error handling
           if ! docker-compose up -d --build --force-recreate; then
             echo "Failed to start containers"
             docker-compose logs
             exit 1
           fi
-
-          # Wait for containers to be healthy
-          echo "Waiting for containers to be healthy..."
-          sleep 10
-
-          # Verify deployment
-          if ! curl -s -f http://localhost:80 > /dev/null; then
-            echo "Deployment verification failed"
-            docker-compose logs
+          
+          # Wait for PostgreSQL to be ready
+          echo "Waiting for PostgreSQL to be ready..."
+          max_attempts=30
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            if docker-compose exec -T db pg_isready; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            
+            echo "Attempt $attempt/$max_attempts: PostgreSQL is not ready yet..."
+            sleep 2
+            attempt=$((attempt + 1))
+          done
+          
+          if [ $attempt -gt $max_attempts ]; then
+            echo "Error: PostgreSQL failed to become ready"
+            docker-compose logs db
             exit 1
           fi
-
-          # Clean up temporary directory if it exists
-          safe_remove_directory "/app/tmp"
-
+          
           echo "Deployment completed successfully"
           EOSSH
-
-          # Copy deployment files to server
-          echo "Creating temporary directory on server..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/tmp"
-
-          echo "Copying deployment files..."
+          
+          # Deploy files and execute script
           scp -i ~/.ssh/deploy_key \
             docker-compose.yml Dockerfile nginx.conf .env deploy_remote.sh \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/tmp/
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
 
-          echo "Moving files to final location and executing deployment..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-            cd /app && \
-            cp -a tmp/* . && \
-            bash deploy_remote.sh
-          "
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /app && bash deploy_remote.sh"
 
       - name: Cleanup
         if: always()
