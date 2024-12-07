@@ -1,12 +1,9 @@
-# This is our main CI/CD pipeline configuration file. It handles the entire process
-# of building, testing, and deploying our React application. The pipeline includes
-# comprehensive error checking and detailed logging at each step.
-
+# This is our main CI/CD pipeline configuration that handles building and deploying
+# the React application. The workflow is designed to be robust and informative,
+# with proper error handling at each step.
 name: CI/CD Pipeline
 
-# Define when this workflow should run. We trigger it on pushes to the main branch
-# and when pull requests target the main branch. This ensures our code is verified
-# both during development and before deployment.
+# Define when this workflow should run
 on:
   push:
     branches:
@@ -15,8 +12,7 @@ on:
     branches:
       - main
 
-# Define environment variables that will be used throughout the workflow.
-# These variables help us maintain consistency and make updates easier.
+# Define environment variables used throughout the workflow
 env:
   NODE_VERSION: '20'
   DEPLOY_PATH: '/app'
@@ -26,7 +22,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
-    # Set up environment variables, including sensitive data from GitHub secrets
+    # Define environment variables, including secrets
     env:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -45,23 +41,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      
-      # Install project dependencies and verify critical packages are present
+
       - name: Install dependencies
         run: |
           echo "Installing project dependencies..."
           npm ci
           
-          # Install specific required packages
-          echo "Installing essential build dependencies..."
+          # Install essential build dependencies
           npm install @vitejs/plugin-react-swc vite @types/node --save-dev
           
           # Verify critical dependencies
-          echo "Verifying critical dependencies..."
           npm list vite @vitejs/plugin-react-swc react react-dom || true
 
-      # Set up build configuration and verify project structure
-      - name: Prepare build environment
+      - name: Setup build configuration
         run: |
           echo "Creating Vite configuration..."
           cat > vite.config.ts << 'EOF'
@@ -76,9 +68,14 @@ jobs:
               sourcemap: true,
               rollupOptions: {
                 output: {
-                  manualChunks: {
-                    'vendor': ['react', 'react-dom'],
-                  }
+                  manualChunks: (id) => {
+                    if (id.includes('node_modules')) {
+                      return 'vendor'
+                    }
+                  },
+                  entryFileNames: 'assets/[name]-[hash].js',
+                  chunkFileNames: 'assets/[name]-[hash].js',
+                  assetFileNames: 'assets/[name]-[hash].[ext]'
                 }
               }
             },
@@ -89,38 +86,103 @@ jobs:
             }
           })
           EOF
-          
-          echo "Vite configuration created successfully"
 
-      # Build the application with detailed logging and verification
-      - name: Build
+      - name: Build with verification
         run: |
           echo "=== Starting Build Process ==="
-          echo "Environment: Node $(node -v), npm $(npm -v)"
+          echo "Node version: $(node -v)"
+          echo "npm version: $(npm -v)"
           
           # Clean previous build
           rm -rf dist
           
-          # Execute build
+          # Run build
           npm run build --verbose
           
           # Verify build output
+          echo "Verifying build output..."
           if [ ! -d "dist" ]; then
             echo "Error: Build failed - dist directory not found"
             exit 1
           fi
           
-          echo "Build directory contents:"
-          ls -la dist/
-          
-          # Verify JavaScript bundles
-          JS_FILES=$(find dist -name "*.js" | wc -l)
+          echo "Checking for JavaScript files..."
+          JS_FILES=$(find dist -name "*.js" | tee /dev/stderr | wc -l)
           if [ "$JS_FILES" -eq 0 ]; then
-            echo "Error: No JavaScript bundles found in build output!"
+            echo "Error: No JavaScript bundles found!"
             exit 1
           fi
+          
+          echo "Build output structure:"
+          find dist -type f -exec ls -l {} \;
 
-      # Set up SSH for secure deployment
+      - name: Create Nginx configuration
+        run: |
+          cat > nginx.conf << 'EOF'
+          user nginx;
+          worker_processes auto;
+          error_log /var/log/nginx/error.log debug;
+          pid /var/run/nginx.pid;
+
+          events {
+              worker_connections 1024;
+          }
+
+          http {
+              include /etc/nginx/mime.types;
+              default_type application/octet-stream;
+
+              log_format debug_log '$remote_addr - $remote_user [$time_local] '
+                                '"$request" $status $body_bytes_sent '
+                                '"$http_referer" "$http_user_agent" '
+                                'rt=$request_time uct="$upstream_connect_time" '
+                                'uht="$upstream_header_time" urt="$upstream_response_time" '
+                                'file="$request_filename" root="$document_root"';
+
+              access_log /var/log/nginx/access.log debug_log;
+
+              sendfile on;
+              tcp_nopush on;
+              tcp_nodelay on;
+              keepalive_timeout 65;
+              types_hash_max_size 2048;
+
+              server {
+                  listen 80;
+                  server_name hassan-adam.com www.hassan-adam.com localhost;
+                  
+                  root /usr/share/nginx/html;
+                  index index.html;
+                  
+                  add_header X-Frame-Options "SAMEORIGIN" always;
+                  add_header X-XSS-Protection "1; mode=block" always;
+                  add_header X-Content-Type-Options "nosniff" always;
+                  add_header Referrer-Policy "no-referrer-when-unsafe" always;
+                  add_header Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: blob: https:; font-src 'self' data: https:;" always;
+
+                  location / {
+                      try_files $uri $uri/ /index.html;
+                      add_header Cache-Control "no-store, no-cache, must-revalidate";
+                  }
+
+                  location ~* \.js$ {
+                      add_header Content-Type application/javascript;
+                      add_header Cache-Control "public, max-age=31536000";
+                      try_files $uri =404;
+                  }
+
+                  location /assets/ {
+                      alias /usr/share/nginx/html/assets/;
+                      add_header Cache-Control "public, max-age=31536000";
+                      try_files $uri =404;
+                  }
+
+                  error_page 404 /index.html;
+                  error_page 500 502 503 504 /50x.html;
+              }
+          }
+          EOF
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -129,7 +191,6 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      # Deploy the application if we're on the main branch
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
@@ -140,47 +201,59 @@ jobs:
 
           cd /app
 
+          # Stop existing containers
+          docker-compose down -v || true
+          docker system prune -af --force || true
+
           # Ensure proper permissions
           sudo chown -R $USER:$USER .
           chmod 755 .
           chmod 600 .env
 
-          # Stop existing services
-          docker-compose down -v || true
-          docker system prune -af --force || true
-
           # Start services
           docker-compose up -d --build --force-recreate
 
           # Verify deployment
+          echo "Waiting for services to start..."
           sleep 10
-          if ! curl -s -f http://localhost:80 > /dev/null; then
-            echo "Deployment verification failed"
-            docker-compose logs
-            exit 1
-          fi
 
-          echo "Deployment completed successfully"
+          # Test nginx configuration
+          docker exec web_app nginx -t
+
+          # Check service status
+          docker exec web_app curl -I http://localhost
+
+          # Verify JavaScript files are accessible
+          for js in $(find /usr/share/nginx/html/assets -name "*.js"); do
+            filename=$(basename $js)
+            echo "Testing $filename..."
+            docker exec web_app curl -I "http://localhost/assets/$filename"
+          done
+
+          echo "Deployment completed"
           EOF
 
           # Copy files to server
           echo "Copying deployment files..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p ${{ env.DEPLOY_PATH }}"
+          
           scp -i ~/.ssh/deploy_key \
             docker-compose.yml Dockerfile nginx.conf .env deploy.sh \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_PATH }}/
 
           # Copy application files
           echo "Copying application files..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p ${{ env.DEPLOY_PATH }}/dist"
+          
           scp -i ~/.ssh/deploy_key -r \
             dist/* \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_PATH }}/dist/
 
           # Execute deployment
+          echo "Executing deployment..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /app && chmod +x deploy.sh && ./deploy.sh"
+            "cd ${{ env.DEPLOY_PATH }} && chmod +x deploy.sh && ./deploy.sh"
 
-      # Send email notification about deployment status
       - name: Send Deployment Status Email
         if: always()
         run: |
@@ -207,7 +280,6 @@ jobs:
               }'
           fi
 
-      # Clean up sensitive files
       - name: Cleanup
         if: always()
         run: |
