@@ -1,16 +1,13 @@
-# Comprehensive CI/CD workflow for React application deployment
-# This workflow handles building, testing, and deploying the application
-# with proper verification steps and error handling
-
+# Comprehensive CI/CD workflow for React/Vite application
 name: CI/CD Pipeline
 
-# Define workflow triggers
+# Define when this workflow should run
 on:
-  # Trigger on pushes to main branch
+  # Run on pushes to main branch
   push:
     branches:
       - main
-  # Trigger on pull requests targeting main branch
+  # Run on pull requests targeting main branch
   pull_request:
     branches:
       - main
@@ -47,21 +44,146 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       
-      # Step 3: Install project dependencies
-      - name: Install dependencies
-        run: npm ci
-      
-      # Step 4: Build the application
-      - name: Build
+      # Step 3: Verify project configuration
+      - name: Verify project configuration
         run: |
-          npm run build
-          # Verify build output
-          if [ ! -d "dist" ]; then
-            echo "Error: Build failed - dist directory not found"
+          # Check for essential configuration files
+          echo "Checking essential configuration files..."
+          
+          # Check package.json
+          if [ ! -f "package.json" ]; then
+            echo "Error: package.json not found!"
             exit 1
           fi
-          echo "Build output contents:"
-          ls -la dist/
+          
+          # Check vite.config.ts
+          if [ ! -f "vite.config.ts" ]; then
+            echo "Error: vite.config.ts not found!"
+            exit 1
+          fi
+          
+          # Check tsconfig.json if using TypeScript
+          if [ ! -f "tsconfig.json" ]; then
+            echo "Error: tsconfig.json not found!"
+            exit 1
+          fi
+          
+          # Check main entry point
+          if [ ! -f "src/main.tsx" ]; then
+            echo "Error: src/main.tsx not found!"
+            exit 1
+          fi
+          
+          echo "All essential configuration files present"
+      
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          # Clean install without updating package-lock.json
+          npm ci
+          
+          # Verify essential build dependencies
+          echo "Verifying build dependencies..."
+          npm ls @vitejs/plugin-react-swc vite typescript || true
+      
+      # Step 5: Enhanced build process
+      - name: Build
+        run: |
+          # Print environment information
+          echo "=== Build Environment ==="
+          echo "Node version: $(node -v)"
+          echo "npm version: $(npm -v)"
+          echo "Operating System: $(uname -a)"
+          
+          # Clean previous build artifacts
+          echo "Cleaning previous build..."
+          rm -rf dist
+          
+          # Create build verification script
+          cat << 'EOF' > verify-build.sh
+          #!/bin/bash
+          
+          # Function to check for specific file types
+          check_files() {
+            local dir=$1
+            local type=$2
+            local count=$(find $dir -type f -name "$type" | wc -l)
+            echo "Found $count $type files"
+            return $([ "$count" -gt 0 ])
+          }
+          
+          # Main verification logic
+          verify_build() {
+            local build_dir="dist"
+            
+            echo "Verifying build output in $build_dir..."
+            
+            # Check if build directory exists
+            if [ ! -d "$build_dir" ]; then
+              echo "Error: Build directory not found!"
+              return 1
+            fi
+            
+            # List all files in build directory
+            echo "Build directory contents:"
+            find "$build_dir" -type f
+            
+            # Check for index.html
+            if [ ! -f "$build_dir/index.html" ]; then
+              echo "Error: index.html not found!"
+              return 1
+            fi
+            
+            # Check for JavaScript files
+            if ! check_files "$build_dir" "*.js"; then
+              echo "Error: No JavaScript bundles found!"
+              return 1
+            fi
+            
+            # Check for CSS files
+            if ! check_files "$build_dir" "*.css"; then
+              echo "Warning: No CSS files found"
+            fi
+            
+            # Check for asset files
+            echo "Checking for asset files..."
+            find "$build_dir" -type f -not -name "*.html" -not -name "*.js" -not -name "*.css"
+            
+            # Verify index.html contents
+            echo "Verifying index.html references..."
+            if ! grep -q "script.*src=.*\.js" "$build_dir/index.html"; then
+              echo "Error: No JavaScript references found in index.html!"
+              return 1
+            fi
+            
+            echo "Build verification completed successfully"
+            return 0
+          }
+          
+          # Run verification
+          verify_build
+          EOF
+          
+          # Make verification script executable
+          chmod +x verify-build.sh
+          
+          # Run build with increased verbosity
+          echo "Starting build process..."
+          npm run build --verbose
+          
+          # Run build verification
+          echo "Verifying build output..."
+          ./verify-build.sh || {
+            echo "Build verification failed!"
+            exit 1
+          }
+          
+          # Archive build artifacts for deployment
+          echo "Archiving build artifacts..."
+          tar -czf build.tar.gz dist/
+          
+          echo "Build process completed successfully"
 
       # Step 5: Create configuration files
       - name: Create configuration files
