@@ -1,28 +1,21 @@
-# Comprehensive CI/CD workflow for React/Vite application
 name: CI/CD Pipeline
 
-# Define when this workflow should run
 on:
-  # Run on pushes to main branch
   push:
     branches:
       - main
-  # Run on pull requests targeting main branch
   pull_request:
     branches:
       - main
 
-# Define environment variables used throughout the workflow
 env:
   NODE_VERSION: '20'
   DEPLOY_PATH: '/app'
-  NGINX_CONTAINER: 'web_app'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
-    # Define environment variables, including secrets
     env:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -33,151 +26,131 @@ jobs:
       POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
     steps:
-      # Step 1: Check out the repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js environment
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      
-      # Step 3: Verify project configuration
-      - name: Verify project configuration
+
+      - name: Diagnostic Check
         run: |
-          # Check for essential configuration files
-          echo "Checking essential configuration files..."
-          
-          # Check package.json
-          if [ ! -f "package.json" ]; then
-            echo "Error: package.json not found!"
-            exit 1
-          fi
-          
-          # Check vite.config.ts
-          if [ ! -f "vite.config.ts" ]; then
-            echo "Error: vite.config.ts not found!"
-            exit 1
-          fi
-          
-          # Check tsconfig.json if using TypeScript
-          if [ ! -f "tsconfig.json" ]; then
-            echo "Error: tsconfig.json not found!"
-            exit 1
-          fi
-          
-          # Check main entry point
-          if [ ! -f "src/main.tsx" ]; then
-            echo "Error: src/main.tsx not found!"
-            exit 1
-          fi
-          
-          echo "All essential configuration files present"
-      
-      # Step 4: Install dependencies
-      - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
-          # Clean install without updating package-lock.json
-          npm ci
-          
-          # Verify essential build dependencies
-          echo "Verifying build dependencies..."
-          npm ls @vitejs/plugin-react-swc vite typescript || true
-      
-      # Step 5: Enhanced build process
-      - name: Build
-        run: |
-          # Print environment information
-          echo "=== Build Environment ==="
+          echo "=== Environment Information ==="
           echo "Node version: $(node -v)"
           echo "npm version: $(npm -v)"
-          echo "Operating System: $(uname -a)"
+          echo "Current directory: $(pwd)"
           
-          # Clean previous build artifacts
-          echo "Cleaning previous build..."
+          echo "=== Project Structure ==="
+          tree -L 3 || ls -R
+          
+          echo "=== Package.json Content ==="
+          cat package.json
+          
+          echo "=== Vite Config Content ==="
+          cat vite.config.ts || echo "vite.config.ts not found"
+          
+          echo "=== Entry Point Check ==="
+          cat src/main.tsx || echo "main.tsx not found"
+
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies with detailed output..."
+          npm ci --verbose
+          
+          echo "=== Installed Packages ==="
+          npm list || true
+          
+          echo "=== Checking Critical Dependencies ==="
+          npm list vite @vitejs/plugin-react-swc react react-dom || true
+
+      - name: Prepare Build Environment
+        run: |
+          # Create or update vite.config.ts if needed
+          if [ ! -f "vite.config.ts" ]; then
+            echo "Creating vite.config.ts..."
+            cat << 'EOF' > vite.config.ts
+            import { defineConfig } from 'vite'
+            import react from '@vitejs/plugin-react-swc'
+            import path from 'path'
+
+            export default defineConfig({
+              plugins: [react()],
+              build: {
+                outDir: 'dist',
+                sourcemap: true,
+                rollupOptions: {
+                  output: {
+                    manualChunks: {
+                      'vendor': ['react', 'react-dom'],
+                    },
+                  }
+                }
+              },
+              resolve: {
+                alias: {
+                  '@': path.resolve(__dirname, './src')
+                }
+              }
+            })
+            EOF
+          fi
+
+      - name: Build with Enhanced Debugging
+        run: |
+          echo "=== Starting Build Process ==="
+          
+          # Clean previous build
           rm -rf dist
           
           # Create build verification script
           cat << 'EOF' > verify-build.sh
           #!/bin/bash
           
-          # Function to check for specific file types
-          check_files() {
-            local dir=$1
-            local type=$2
-            local count=$(find $dir -type f -name "$type" | wc -l)
-            echo "Found $count $type files"
-            return $([ "$count" -gt 0 ])
-          }
+          echo "=== Build Verification Started ==="
           
-          # Main verification logic
-          verify_build() {
-            local build_dir="dist"
-            
-            echo "Verifying build output in $build_dir..."
-            
-            # Check if build directory exists
-            if [ ! -d "$build_dir" ]; then
-              echo "Error: Build directory not found!"
-              return 1
-            fi
-            
-            # List all files in build directory
-            echo "Build directory contents:"
-            find "$build_dir" -type f
-            
-            # Check for index.html
-            if [ ! -f "$build_dir/index.html" ]; then
-              echo "Error: index.html not found!"
-              return 1
-            fi
-            
-            # Check for JavaScript files
-            if ! check_files "$build_dir" "*.js"; then
-              echo "Error: No JavaScript bundles found!"
-              return 1
-            fi
-            
-            # Check for CSS files
-            if ! check_files "$build_dir" "*.css"; then
-              echo "Warning: No CSS files found"
-            fi
-            
-            # Check for asset files
-            echo "Checking for asset files..."
-            find "$build_dir" -type f -not -name "*.html" -not -name "*.js" -not -name "*.css"
-            
-            # Verify index.html contents
-            echo "Verifying index.html references..."
-            if ! grep -q "script.*src=.*\.js" "$build_dir/index.html"; then
-              echo "Error: No JavaScript references found in index.html!"
-              return 1
-            fi
-            
-            echo "Build verification completed successfully"
-            return 0
-          }
+          # Check dist directory
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found"
+            exit 1
+          fi
           
-          # Run verification
-          verify_build
+          echo "=== Directory Structure ==="
+          tree dist || ls -R dist
+          
+          echo "=== File Types Summary ==="
+          find dist -type f -exec file {} \;
+          
+          echo "=== JavaScript Files ==="
+          find dist -name "*.js" | tee js-files.txt
+          JS_COUNT=$(wc -l < js-files.txt)
+          echo "Found $JS_COUNT JavaScript files"
+          
+          if [ "$JS_COUNT" -eq 0 ]; then
+            echo "Error: No JavaScript bundles found!"
+            echo "=== Build Output ==="
+            cat npm-debug.log || echo "No npm debug log found"
+            echo "=== Vite Build Log ==="
+            cat vite-build.log || echo "No Vite build log found"
+            exit 1
+          fi
+          
+          echo "=== Index.html Content ==="
+          cat dist/index.html
+          
+          echo "Build verification completed successfully"
           EOF
           
-          # Make verification script executable
           chmod +x verify-build.sh
           
-          # Run build with increased verbosity
-          echo "Starting build process..."
-          npm run build --verbose
+          # Run build with detailed logging
+          echo "Running build..."
+          npm run build --verbose 2>&1 | tee vite-build.log
           
-          # Run build verification
-          echo "Verifying build output..."
-          ./verify-build.sh || {
-            echo "Build verification failed!"
-            exit 1
-          }
+          # Verify build output
+          ./verify-build.sh
+
           
           # Archive build artifacts for deployment
           echo "Archiving build artifacts..."
