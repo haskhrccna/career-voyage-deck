@@ -35,128 +35,87 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Diagnostic Check
-        run: |
-          echo "=== Environment Information ==="
-          echo "Node version: $(node -v)"
-          echo "npm version: $(npm -v)"
-          echo "Current directory: $(pwd)"
-          
-          echo "=== Project Structure ==="
-          tree -L 3 || ls -R
-          
-          echo "=== Package.json Content ==="
-          cat package.json
-          
-          echo "=== Vite Config Content ==="
-          cat vite.config.ts || echo "vite.config.ts not found"
-          
-          echo "=== Entry Point Check ==="
-          cat src/main.tsx || echo "main.tsx not found"
-
-      - name: Install dependencies
-        run: |
-          echo "Installing dependencies with detailed output..."
-          npm ci --verbose
-          
-          echo "=== Installed Packages ==="
-          npm list || true
-          
-          echo "=== Checking Critical Dependencies ==="
-          npm list vite @vitejs/plugin-react-swc react react-dom || true
-
       - name: Prepare Build Environment
         run: |
-          # Create or update vite.config.ts if needed
+          # First, let's check if vite.config.ts already exists
           if [ ! -f "vite.config.ts" ]; then
             echo "Creating vite.config.ts..."
-            cat << 'EOF' > vite.config.ts
+            # Note the 'EOF' must be at the start of the line with no spaces before it
+            cat > vite.config.ts << 'EOF'
             import { defineConfig } from 'vite'
             import react from '@vitejs/plugin-react-swc'
             import path from 'path'
 
             export default defineConfig({
-              plugins: [react()],
-              build: {
-                outDir: 'dist',
-                sourcemap: true,
-                rollupOptions: {
-                  output: {
-                    manualChunks: {
-                      'vendor': ['react', 'react-dom'],
-                    },
-                  }
-                }
-              },
-              resolve: {
-                alias: {
-                  '@': path.resolve(__dirname, './src')
-                }
-              }
+            plugins: [react()],
+            build: {
+            outDir: 'dist',
+            sourcemap: true,
+            rollupOptions: {
+            output: {
+            manualChunks: {
+          'vendor': ['react', 'react-dom'],
+            },
+            }
+            }
+            },
+            resolve: {
+            alias: {
+            '@': path.resolve(__dirname, './src')
+            }
+            }
             })
-            EOF
+          EOF
+
+            echo "vite.config.ts created successfully"
+            echo "Content of vite.config.ts:"
+            cat vite.config.ts
+          else
+            echo "vite.config.ts already exists"
+            echo "Current content:"
+            cat vite.config.ts
           fi
 
-      - name: Build with Enhanced Debugging
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          npm ci
+          npm install @vitejs/plugin-react-swc vite @types/node --save-dev
+
+      - name: Build
         run: |
           echo "=== Starting Build Process ==="
+          echo "Node version: $(node -v)"
+          echo "npm version: $(npm -v)"
           
           # Clean previous build
           rm -rf dist
           
-          # Create build verification script
-          cat << 'EOF' > verify-build.sh
-          #!/bin/bash
+          # Run build with detailed logging
+          echo "Running build..."
+          npm run build --verbose
           
-          echo "=== Build Verification Started ==="
-          
-          # Check dist directory
+          # Verify build output
+          echo "Verifying build output..."
           if [ ! -d "dist" ]; then
             echo "Error: dist directory not found"
             exit 1
           fi
           
-          echo "=== Directory Structure ==="
-          tree dist || ls -R dist
+          echo "Checking for JavaScript files..."
+          JS_FILES=$(find dist -name "*.js" | tee /dev/stderr | wc -l)
           
-          echo "=== File Types Summary ==="
-          find dist -type f -exec file {} \;
-          
-          echo "=== JavaScript Files ==="
-          find dist -name "*.js" | tee js-files.txt
-          JS_COUNT=$(wc -l < js-files.txt)
-          echo "Found $JS_COUNT JavaScript files"
-          
-          if [ "$JS_COUNT" -eq 0 ]; then
+          if [ "$JS_FILES" -eq 0 ]; then
             echo "Error: No JavaScript bundles found!"
-            echo "=== Build Output ==="
-            cat npm-debug.log || echo "No npm debug log found"
-            echo "=== Vite Build Log ==="
-            cat vite-build.log || echo "No Vite build log found"
+            echo "Build output contents:"
+            ls -la dist/
+            echo "Build logs:"
+            cat npm-debug.log 2>/dev/null || echo "No npm debug log found"
             exit 1
           fi
           
-          echo "=== Index.html Content ==="
-          cat dist/index.html
-          
-          echo "Build verification completed successfully"
-          EOF
-          
-          chmod +x verify-build.sh
-          
-          # Run build with detailed logging
-          echo "Running build..."
-          npm run build --verbose 2>&1 | tee vite-build.log
-          
-          # Verify build output
-          ./verify-build.sh
-
-          
-          # Archive build artifacts for deployment
-          echo "Archiving build artifacts..."
-          tar -czf build.tar.gz dist/
-          
-          echo "Build process completed successfully"
+          echo "Found $JS_FILES JavaScript files"
+          echo "Build completed successfully"
 
       # Step 5: Create configuration files
       - name: Create configuration files
