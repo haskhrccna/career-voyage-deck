@@ -46,33 +46,32 @@ jobs:
 
       - name: Prepare Server Directory Structure
         run: |
-          echo "Setting up server directory structure..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            # Create application directory if it doesn't exist
-            sudo mkdir -p /app
-            
-            # Set ownership of the app directory to our user
-            sudo chown -R $USER:$USER /app
-            
-            # Set proper directory permissions
-            sudo chmod 755 /app
-            
-            # Create necessary subdirectories
-            mkdir -p /app/dist
-            
-            echo "Directory permissions:"
-            ls -la /app
-          '
+          # Create a separate script for SSH commands
+          cat << 'EOSSH' > setup_server.sh
+          # Create application directory if it doesn't exist
+          sudo mkdir -p /app
+
+          # Set ownership of the app directory to our user
+          sudo chown -R $USER:$USER /app
+
+          # Set proper directory permissions
+          sudo chmod 755 /app
+
+          # Create necessary subdirectories
+          mkdir -p /app/dist
+
+          echo "Directory permissions:"
+          ls -la /app
+          EOSSH
+
+          # Execute the script over SSH
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash -s' < setup_server.sh
 
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # First, create the deployment script locally
-          cat << 'EOF' > deploy.sh
-          #!/bin/bash
-          set -e
-
-          echo "Starting deployment process..."
+          # Create deployment script
+          cat << 'EOSSH' > deploy_remote.sh
           cd /app
 
           # Ensure proper permissions
@@ -108,60 +107,30 @@ jobs:
           fi
 
           echo "Deployment completed successfully"
-          EOF
+          EOSSH
 
-          # Make the script executable
-          chmod +x deploy.sh
+          # Copy deployment files to server
+          echo "Creating temporary directory on server..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/tmp"
 
           echo "Copying deployment files..."
-          # Create a temporary directory for deployment files
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/tmp'
-          
-          # Copy files to temporary directory first
           scp -i ~/.ssh/deploy_key \
-            docker-compose.yml Dockerfile nginx.conf .env deploy.sh \
+            docker-compose.yml Dockerfile nginx.conf .env deploy_remote.sh \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/tmp/
 
-          # Move files to final location with proper permissions
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            cd /app
-            mv tmp/* .
-            rmdir tmp
-            chmod +x deploy.sh
-            
-            # Set proper file permissions
-            chmod 644 docker-compose.yml Dockerfile nginx.conf .env
-            
-            # Execute deployment script
-            ./deploy.sh
-          '
-
-      - name: Send Deployment Status Email
-        if: always()
-        run: |
-          if [ -n "$RESEND_API_KEY" ]; then
-            DEPLOY_STATUS="${{ job.status }}"
-            DEPLOY_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-            
-            curl -X POST \
-              -H "Authorization: Bearer $RESEND_API_KEY" \
-              -H "Content-Type: application/json" \
-              https://api.resend.com/emails \
-              -d '{
-                "from": "notifications@hassan-adam.com",
-                "to": "haskhr@hotmail.com",
-                "subject": "Deployment Status: '"$DEPLOY_STATUS"'",
-                "html": "
-                  <h2>Deployment Status: '"$DEPLOY_STATUS"'</h2>
-                  <p><strong>Repository:</strong> '"${{ github.repository }}"'</p>
-                  <p><strong>Branch:</strong> '"${GITHUB_REF#refs/heads/}"'</p>
-                  <p><strong>Commit:</strong> '"${{ github.sha }}"'</p>
-                  <p><strong>Triggered by:</strong> '"${{ github.actor }}"'</p>
-                  <p><strong>Deployment Time:</strong> '"$DEPLOY_TIME"'</p>
-                "
-              }'
-          fi
+          echo "Moving files to final location and executing deployment..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            cd /app && \
+            mv tmp/* . && \
+            rmdir tmp && \
+            chmod +x deploy_remote.sh && \
+            chmod 644 docker-compose.yml Dockerfile nginx.conf .env && \
+            ./deploy_remote.sh
+          "
 
       - name: Cleanup
         if: always()
-        run: rm -f ~/.ssh/deploy_key
+        run: |
+          rm -f ~/.ssh/deploy_key
+          rm -f setup_server.sh
+          rm -f deploy_remote.sh
