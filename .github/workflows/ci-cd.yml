@@ -30,128 +30,11 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
-        
-      - name: Debug - Create and verify page components
-        run: |
-          # Create pages directory
-          mkdir -p src/pages
-          
-          # Create Index.tsx
-          cat > src/pages/Index.tsx << 'EOL'
-          import React from 'react';
-          
-          const Index = () => {
-            return (
-              <div className="container mx-auto px-4 py-8">
-                <h1 className="text-4xl font-bold text-white mb-6">
-                  Welcome to Career Voyage Deck
-                </h1>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  <div className="bg-slate-800 rounded-lg p-6">
-                    <h2 className="text-2xl font-semibold text-white mb-4">
-                      Explore Your Career Journey
-                    </h2>
-                    <p className="text-slate-300">
-                      Visualize and plan your professional growth with our interactive tools and resources.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          };
-          
-          export default Index;
-          EOL
-          
-          # Create Contact.tsx
-          cat > src/pages/Contact.tsx << 'EOL'
-          import React from 'react';
-          import { toast } from '../components/ui/use-toast';
-          
-          const Contact = () => {
-            const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-              e.preventDefault();
-              try {
-                toast({
-                  title: "Message sent!",
-                  description: "We'll get back to you as soon as possible.",
-                });
-              } catch (error) {
-                toast({
-                  title: "Error",
-                  description: "Failed to send message. Please try again.",
-                  variant: "destructive",
-                });
-              }
-            };
-          
-            return (
-              <div className="container mx-auto px-4 py-8">
-                <h1 className="text-4xl font-bold text-white mb-6">Contact Us</h1>
-                <div className="max-w-2xl mx-auto">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="text-white">Name</label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        required
-                        className="w-full p-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-white">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        className="w-full p-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="message" className="text-white">Message</label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        required
-                        rows={4}
-                        className="w-full p-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Send Message
-                    </button>
-                  </form>
-                </div>
-              </div>
-            );
-          };
-          
-          export default Contact;
-          EOL
-          
-          # Verify file creation and structure
-          echo "Checking file structure:"
-          ls -la src/pages/
-          
-          echo "File contents of Index.tsx:"
-          cat src/pages/Index.tsx
-          
-          echo "File contents of Contact.tsx:"
-          cat src/pages/Contact.tsx
-
+      
       - name: Build
         run: |
           npm run build
           ls -la dist/
-          
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Setup SSH
         run: |
@@ -161,102 +44,95 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Test SSH Connection
+      - name: Prepare Server Directory Structure
         run: |
-          if ! ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'; then
-            echo "Failed to establish SSH connection"
-            exit 1
-          fi
+          echo "Setting up server directory structure..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
+            # Create application directory if it doesn't exist
+            sudo mkdir -p /app
+            
+            # Set ownership of the app directory to our user
+            sudo chown -R $USER:$USER /app
+            
+            # Set proper directory permissions
+            sudo chmod 755 /app
+            
+            # Create necessary subdirectories
+            mkdir -p /app/dist
+            
+            echo "Directory permissions:"
+            ls -la /app
+          '
 
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment script
+          # First, create the deployment script locally
           cat << 'EOF' > deploy.sh
           #!/bin/bash
           set -e
 
           echo "Starting deployment process..."
-          
-          # Function to check if port 80 is in use
-          check_port_80() {
-            if sudo lsof -i :80 >/dev/null 2>&1; then
-              echo "Port 80 is in use. Attempting to free it..."
-              sudo lsof -t -i:80 | xargs -r sudo kill -9
-              sleep 5
-            fi
-          }
-
-          # Function to wait for container health
-          wait_for_container() {
-            local container_name=$1
-            local max_attempts=30
-            local attempt=1
-
-            while [ $attempt -le $max_attempts ]; do
-              if docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null | grep -q "healthy"; then
-                echo "$container_name is healthy"
-                return 0
-              fi
-              echo "Waiting for $container_name to be healthy (attempt $attempt/$max_attempts)..."
-              sleep 10
-              attempt=$((attempt + 1))
-            done
-            
-            echo "$container_name failed to become healthy"
-            docker logs $container_name
-            return 1
-          }
-
           cd /app
 
-          # Backup current deployment
-          if [ -d "dist" ]; then
-            mv dist dist_backup
+          # Ensure proper permissions
+          sudo chown -R $USER:$USER .
+          chmod 755 .
+
+          # Stop and remove existing containers
+          docker-compose down -v || true
+          docker system prune -af || true
+
+          # Check and free port 80 if needed
+          if sudo lsof -i :80 >/dev/null 2>&1; then
+            echo "Freeing port 80..."
+            sudo lsof -t -i:80 | xargs -r sudo kill -9
           fi
 
-          # Clean up Docker resources
-          echo "Cleaning up Docker resources..."
-          docker-compose down -v || true
-          docker system prune -af --volumes || true
-
-          # Check and free port 80
-          check_port_80
-
-          # Start containers
-          echo "Starting containers..."
-          docker-compose up -d --build --force-recreate
-
-          # Wait for web_app container to be healthy
-          if ! wait_for_container "web_app"; then
-            echo "Deployment failed - rolling back..."
-            docker-compose down
-            [ -d "dist_backup" ] && mv dist_backup dist
+          # Start containers with proper error handling
+          if ! docker-compose up -d --build --force-recreate; then
+            echo "Failed to start containers"
+            docker-compose logs
             exit 1
           fi
 
-          # Cleanup backup if deployment successful
-          [ -d "dist_backup" ] && rm -rf dist_backup
+          # Wait for containers to be healthy
+          echo "Waiting for containers to be healthy..."
+          sleep 10
+
+          # Verify deployment
+          if ! curl -s -f http://localhost:80 > /dev/null; then
+            echo "Deployment verification failed"
+            docker-compose logs
+            exit 1
+          fi
 
           echo "Deployment completed successfully"
           EOF
 
-          # Copy deployment files
+          # Make the script executable
+          chmod +x deploy.sh
+
           echo "Copying deployment files..."
+          # Create a temporary directory for deployment files
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/tmp'
+          
+          # Copy files to temporary directory first
           scp -i ~/.ssh/deploy_key \
             docker-compose.yml Dockerfile nginx.conf .env deploy.sh \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/tmp/
 
-          # Copy dist directory
-          echo "Copying dist directory..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist'
-          scp -i ~/.ssh/deploy_key -r dist/* \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
-
-          # Execute deployment
+          # Move files to final location with proper permissions
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            cd /app && 
-            chmod +x deploy.sh && 
+            cd /app
+            mv tmp/* .
+            rmdir tmp
+            chmod +x deploy.sh
+            
+            # Set proper file permissions
+            chmod 644 docker-compose.yml Dockerfile nginx.conf .env
+            
+            # Execute deployment script
             ./deploy.sh
           '
 
@@ -284,17 +160,8 @@ jobs:
                   <p><strong>Deployment Time:</strong> '"$DEPLOY_TIME"'</p>
                 "
               }'
-          else
-            echo "RESEND_API_KEY not set, skipping email notification"
           fi
-          
 
       - name: Cleanup
         if: always()
-        run: |
-          rm -f ~/.ssh/deploy_key
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} '
-            cd /app
-            docker-compose down -v || true
-            docker system prune -af || true
-          ' || true
+        run: rm -f ~/.ssh/deploy_key
