@@ -6,14 +6,13 @@ import { BrowserRouter } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import { Routes, Route, useLocation } from "react-router-dom";
-import Index from "./pages/Index";
-import Contact from "./pages/Contact";
+import IndexPage from "./pages/index"; // Updated import
+import ContactPage from "./pages/contact"; // Updated import
 import { useEffect } from "react";
 import { trackVisitor } from "./utils/visitorTracking";
-import { toast } from "./components/ui/use-toast";
 import React from 'react';
 
-// Create a client
+// Create a client with configured options
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,7 +34,6 @@ const AppContent = () => {
         // Silently fail for visitor tracking to not impact user experience
       }
     };
-
     handleVisitorTracking();
   }, [location.pathname]);
 
@@ -43,8 +41,8 @@ const AppContent = () => {
     <div className="min-h-screen bg-slate-900">
       <Navigation />
       <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/" element={<IndexPage />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Routes>
       <Toaster />
       <Sonner />
@@ -52,7 +50,6 @@ const AppContent = () => {
   );
 };
 
-// Wrap the entire app with necessary providers
 const App = () => {
   return (
     <LanguageProvider>
