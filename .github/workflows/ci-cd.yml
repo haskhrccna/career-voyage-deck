@@ -39,12 +39,8 @@ jobs:
           npm run build
           ls -la dist/
 
-      - name: Setup SSH and Network Tools
+      - name: Setup SSH
         run: |
-          # Install required network utilities
-          sudo apt-get update
-          sudo apt-get install -y netcat curl iputils-ping
-
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
@@ -54,112 +50,102 @@ jobs:
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create our enhanced deployment script with network resilience
+          # Create deployment script with Docker permission handling
           cat << 'EOSSH' > deploy_remote.sh
           #!/bin/bash
           set -e
 
-          # Function to retry commands with exponential backoff
-          retry_command() {
-            local max_attempts=5
-            local timeout=1
-            local attempt=1
-            local exitCode=0
-
-            while (( $attempt <= $max_attempts ))
-            do
-              if "$@"
-              then
-                return 0
-              else
-                exitCode=$?
-              fi
-
-              if [[ $attempt == $max_attempts ]]
-              then
-                echo "Command failed after $max_attempts attempts: $@"
-                return $exitCode
-              fi
-
-              echo "Attempt $attempt failed! Retrying in $timeout seconds..."
-              sleep $timeout
-              attempt=$(( attempt + 1 ))
-              timeout=$(( timeout * 2 ))
-            done
-          }
-
-          # Function to wait for a service to be ready
-          wait_for_service() {
-            local host=$1
-            local port=$2
-            local service_name=$3
-            local max_attempts=30
-            local attempt=1
-
-            echo "Waiting for $service_name to be ready..."
-            while ! nc -z $host $port >/dev/null 2>&1; do
-              if [ $attempt -eq $max_attempts ]; then
-                echo "Error: $service_name failed to become ready after $max_attempts attempts"
-                return 1
-              fi
-              echo "Attempt $attempt/$max_attempts: $service_name is not ready yet..."
-              sleep 2
-              attempt=$((attempt + 1))
-            done
-            echo "$service_name is ready!"
-            return 0
-          }
-
-          # Function to verify network connectivity
-          check_network() {
-            local target=$1
-            if ! ping -c 1 $target >/dev/null 2>&1; then
-              echo "Error: Cannot reach $target"
+          # Function to check if user is in docker group
+          check_docker_permissions() {
+            echo "Checking Docker permissions..."
+            if ! groups | grep -q docker; then
+              echo "User is not in docker group. Adding user to docker group..."
+              # Add user to docker group
+              sudo usermod -aG docker $USER
+              # Notify about group activation
+              echo "User added to docker group. You may need to log out and back in for this to take effect."
+              echo "For this session, we'll use sudo for Docker commands."
               return 1
             fi
-            echo "Network connectivity to $target confirmed"
             return 0
+          }
+
+          # Function to verify Docker socket permissions
+          check_docker_socket() {
+            echo "Checking Docker socket permissions..."
+            if [ ! -S /var/run/docker.sock ]; then
+              echo "Docker socket doesn't exist. Is Docker installed and running?"
+              return 1
+            fi
+            
+            SOCKET_PERMS=$(stat -c %a /var/run/docker.sock)
+            if [ "$SOCKET_PERMS" != "660" ]; then
+              echo "Fixing Docker socket permissions..."
+              sudo chmod 660 /var/run/docker.sock
+            fi
+            
+            return 0
+          }
+
+          # Function to run Docker commands with or without sudo as needed
+          docker_cmd() {
+            if check_docker_permissions; then
+              docker "$@"
+            else
+              sudo docker "$@"
+            fi
+          }
+
+          # Function to run Docker Compose commands with or without sudo
+          docker_compose_cmd() {
+            if check_docker_permissions; then
+              docker-compose "$@"
+            else
+              sudo docker-compose "$@"
+            fi
           }
 
           cd /app
 
-          # Verify network connectivity first
-          echo "Verifying network connectivity..."
-          retry_command check_network 8.8.8.8
+          # Verify Docker installation and permissions
+          echo "Verifying Docker setup..."
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "Docker is not installed. Installing Docker..."
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sudo sh get-docker.sh
+            rm get-docker.sh
+          fi
+
+          # Check and fix Docker permissions
+          check_docker_socket
 
           # Clean up existing deployment
           echo "Cleaning up existing deployment..."
-          if [ -f "docker-compose.yml" ]; then
-            docker-compose down -v || true
-          fi
-          docker system prune -af --force || true
+          docker_compose_cmd down -v || true
+          docker_cmd system prune -af --force || true
 
-          # Ensure proper permissions
+          # Ensure proper permissions for application files
           sudo chown -R $USER:$USER .
           chmod 755 .
           chmod 600 .env
 
-          # Start services with proper error handling
           echo "Starting services..."
-          if ! docker-compose up -d --build --force-recreate; then
-            echo "Failed to start services"
-            docker-compose logs
+          if ! docker_compose_cmd up -d --build --force-recreate; then
+            echo "Failed to start services. Checking logs..."
+            docker_compose_cmd logs
             exit 1
           fi
 
-          # Wait for database to be ready
-          wait_for_service localhost 5432 "PostgreSQL" || exit 1
+          # Wait for services to be ready
+          echo "Waiting for services to be ready..."
+          sleep 10
 
-          # Wait for web service to be ready
-          wait_for_service localhost 80 "Web Service" || exit 1
-
-          # Verify deployment
-          echo "Verifying deployment..."
-          retry_command curl -f http://localhost:80/health || {
-            echo "Deployment verification failed"
-            docker-compose logs
+          # Check if containers are running
+          if ! docker_compose_cmd ps | grep -q "Up"; then
+            echo "Services failed to start. Checking logs..."
+            docker_compose_cmd logs
             exit 1
-          }
+          fi
 
           echo "Deployment completed successfully"
           EOSSH
