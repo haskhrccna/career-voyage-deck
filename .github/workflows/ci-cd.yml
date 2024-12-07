@@ -17,6 +17,9 @@ jobs:
       SERVER_USER: ${{ secrets.SERVER_USER }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
     steps:
       - name: Checkout code
@@ -36,118 +39,146 @@ jobs:
           npm run build
           ls -la dist/
 
-      - name: Setup SSH
+      - name: Setup SSH and Network Tools
         run: |
+          # Install required network utilities
+          sudo apt-get update
+          sudo apt-get install -y netcat curl iputils-ping
+
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Prepare Server Directory Structure
-        run: |
-          # Create a separate script for SSH commands
-          cat << 'EOSSH' > setup_server.sh
-          # Create application directory if it doesn't exist
-          sudo mkdir -p /app
-
-          # Set ownership of the app directory to our user
-          sudo chown -R $USER:$USER /app
-
-          # Set proper directory permissions
-          sudo chmod 755 /app
-
-          # Create necessary subdirectories
-          mkdir -p /app/dist
-
-          echo "Directory permissions:"
-          ls -la /app
-          EOSSH
-
-          # Execute the script over SSH
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash -s' < setup_server.sh
-
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment script with environment variable handling
+          # Create our enhanced deployment script with network resilience
           cat << 'EOSSH' > deploy_remote.sh
+          #!/bin/bash
+          set -e
+
+          # Function to retry commands with exponential backoff
+          retry_command() {
+            local max_attempts=5
+            local timeout=1
+            local attempt=1
+            local exitCode=0
+
+            while (( $attempt <= $max_attempts ))
+            do
+              if "$@"
+              then
+                return 0
+              else
+                exitCode=$?
+              fi
+
+              if [[ $attempt == $max_attempts ]]
+              then
+                echo "Command failed after $max_attempts attempts: $@"
+                return $exitCode
+              fi
+
+              echo "Attempt $attempt failed! Retrying in $timeout seconds..."
+              sleep $timeout
+              attempt=$(( attempt + 1 ))
+              timeout=$(( timeout * 2 ))
+            done
+          }
+
+          # Function to wait for a service to be ready
+          wait_for_service() {
+            local host=$1
+            local port=$2
+            local service_name=$3
+            local max_attempts=30
+            local attempt=1
+
+            echo "Waiting for $service_name to be ready..."
+            while ! nc -z $host $port >/dev/null 2>&1; do
+              if [ $attempt -eq $max_attempts ]; then
+                echo "Error: $service_name failed to become ready after $max_attempts attempts"
+                return 1
+              fi
+              echo "Attempt $attempt/$max_attempts: $service_name is not ready yet..."
+              sleep 2
+              attempt=$((attempt + 1))
+            done
+            echo "$service_name is ready!"
+            return 0
+          }
+
+          # Function to verify network connectivity
+          check_network() {
+            local target=$1
+            if ! ping -c 1 $target >/dev/null 2>&1; then
+              echo "Error: Cannot reach $target"
+              return 1
+            fi
+            echo "Network connectivity to $target confirmed"
+            return 0
+          }
+
           cd /app
-          
+
+          # Verify network connectivity first
+          echo "Verifying network connectivity..."
+          retry_command check_network 8.8.8.8
+
+          # Clean up existing deployment
+          echo "Cleaning up existing deployment..."
+          if [ -f "docker-compose.yml" ]; then
+            docker-compose down -v || true
+          fi
+          docker system prune -af --force || true
+
           # Ensure proper permissions
           sudo chown -R $USER:$USER .
           chmod 755 .
-          
-          # Make environment file readable only by owner
           chmod 600 .env
-          
-          # Validate environment variables
-          if [ ! -s .env ]; then
-            echo "Error: .env file is empty or missing"
-            exit 1
-          fi
-          
-          # Source environment variables
-          set -a
-          source .env
-          set +a
-          
-          # Validate required database variables
-          required_vars=("POSTGRES_USER" "POSTGRES_PASSWORD" "POSTGRES_DB")
-          for var in "${required_vars[@]}"; do
-            if [ -z "${!var}" ]; then
-              echo "Error: $var is not set"
-              exit 1
-            fi
-          done
-          
-          # Stop and remove existing containers
-          docker-compose down -v || true
-          docker system prune -af || true
-          
-          # Start containers with proper error handling
+
+          # Start services with proper error handling
+          echo "Starting services..."
           if ! docker-compose up -d --build --force-recreate; then
-            echo "Failed to start containers"
+            echo "Failed to start services"
             docker-compose logs
             exit 1
           fi
-          
-          # Wait for PostgreSQL to be ready
-          echo "Waiting for PostgreSQL to be ready..."
-          max_attempts=30
-          attempt=1
-          
-          while [ $attempt -le $max_attempts ]; do
-            if docker-compose exec -T db pg_isready; then
-              echo "PostgreSQL is ready!"
-              break
-            fi
-            
-            echo "Attempt $attempt/$max_attempts: PostgreSQL is not ready yet..."
-            sleep 2
-            attempt=$((attempt + 1))
-          done
-          
-          if [ $attempt -gt $max_attempts ]; then
-            echo "Error: PostgreSQL failed to become ready"
-            docker-compose logs db
+
+          # Wait for database to be ready
+          wait_for_service localhost 5432 "PostgreSQL" || exit 1
+
+          # Wait for web service to be ready
+          wait_for_service localhost 80 "Web Service" || exit 1
+
+          # Verify deployment
+          echo "Verifying deployment..."
+          retry_command curl -f http://localhost:80/health || {
+            echo "Deployment verification failed"
+            docker-compose logs
             exit 1
-          fi
-          
+          }
+
           echo "Deployment completed successfully"
           EOSSH
-          
-          # Deploy files and execute script
+
+          # Make the script executable
+          chmod +x deploy_remote.sh
+
+          # Copy deployment files
+          echo "Copying deployment files..."
           scp -i ~/.ssh/deploy_key \
             docker-compose.yml Dockerfile nginx.conf .env deploy_remote.sh \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
 
+          # Execute deployment
+          echo "Executing deployment script..."
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /app && bash deploy_remote.sh"
-
 
       - name: Cleanup
         if: always()
         run: |
           rm -f ~/.ssh/deploy_key
-          rm -f setup_server.sh
           rm -f deploy_remote.sh
