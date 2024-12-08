@@ -181,6 +181,7 @@ jobs:
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
             "cd /app && chmod +x deploy.sh && ./deploy.sh"
 
+
       - name: Cleanup
         if: always()
         run: |
