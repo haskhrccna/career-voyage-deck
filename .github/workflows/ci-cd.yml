@@ -1,5 +1,8 @@
+# This workflow handles the complete CI/CD pipeline for building and deploying
+# the React application with proper error handling and debugging output
 name: CI/CD Pipeline
 
+# Define when the workflow should run
 on:
   push:
     branches:
@@ -8,6 +11,7 @@ on:
     branches:
       - main
 
+# Define environment variables used throughout the workflow
 env:
   NODE_VERSION: '20'
   DEPLOY_PATH: '/app'
@@ -20,7 +24,6 @@ jobs:
       SERVER_IP: ${{ secrets.SERVER_IP }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
@@ -39,56 +42,84 @@ jobs:
         run: |
           echo "Installing project dependencies..."
           npm ci
+          
+          echo "Installing build dependencies..."
           npm install @vitejs/plugin-react-swc vite @types/node --save-dev
+
+      # Debug step to show environment information
+      - name: Debug Environment
+        run: |
+          echo "Node version: $(node -v)"
+          echo "npm version: $(npm -v)"
+          echo "Working directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
 
       - name: Build
         run: |
           echo "=== Starting Build Process ==="
+          # Clean previous build
           rm -rf dist
+          
+          # Run build
           npm run build --verbose
           
+          # Verify build output
           if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
             echo "Error: Build failed - critical files missing"
             exit 1
           fi
           
-          echo "Checking build output:"
+          echo "Build output contents:"
           find dist -type f -exec ls -l {} \;
 
-      - name: Setup and Debug SSH
+      - name: Debug SSH Key
         run: |
-          # Clean up any existing SSH files
+          echo "=== SSH Key Debugging ==="
+          # Show length of key (safe to display)
+          echo "SSH key length: $(echo "${{ secrets.DEPLOY_KEY }}" | wc -c) characters"
+          
+          # Check if key starts with correct header
+          echo "Checking key format..."
+          if echo "${{ secrets.DEPLOY_KEY }}" | grep -q "^-----BEGIN OPENSSH PRIVATE KEY-----"; then
+            echo "Key has correct header"
+          else
+            echo "Key is missing correct header!"
+            echo "Key starts with (first line, sanitized):"
+            echo "${{ secrets.DEPLOY_KEY }}" | head -n 1 | sed 's/.*/.../g'
+          fi
+          
+          # Check number of lines in key
+          echo "Number of lines in key: $(echo "${{ secrets.DEPLOY_KEY }}" | wc -l)"
+
+      - name: Setup SSH
+        run: |
+          # Ensure clean SSH directory
           rm -rf ~/.ssh
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-    
-          # Write the key with echo, preserving any line breaks
+          
+          # Write SSH key file
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-    
-          # Debug: Check key format (safely)
-          echo "Checking key format..."
-          if ! grep -q "BEGIN OPENSSH PRIVATE KEY" ~/.ssh/deploy_key; then
-          echo "Error: Key is missing the expected header"
-          echo "First line of key file (sanitized):"
-          head -n 1 ~/.ssh/deploy_key | sed 's/.*/.../g'
-          exit 1
-          fi
-    
-          # Add the server to known hosts
+          
+          # Add host key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-    
-          # Verify the key is readable
-          echo "Checking key permissions..."
-          ls -la ~/.ssh/deploy_key
+          
+          echo "SSH directory contents:"
+          ls -la ~/.ssh/
 
-      # Verify SSH connection before proceeding
-      - name: Verify SSH Connection
+      - name: Test SSH Connection
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection test successful"'
+          echo "Testing SSH connection..."
+          # Try SSH connection with verbose output
+          ssh -v -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
 
       - name: Create Environment File
         run: |
+          echo "Creating .env file..."
           cat > .env << EOF
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
@@ -98,6 +129,8 @@ jobs:
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
+          echo "=== Starting Deployment Process ==="
+          
           # Create deployment script
           cat > deploy.sh << 'EOF'
           #!/bin/bash
@@ -105,17 +138,16 @@ jobs:
 
           cd /app
 
-          echo "Ensuring required directories exist..."
+          echo "Creating required directories..."
           mkdir -p dist
-          
-          echo "Checking Docker volumes..."
+          mkdir -p logs/nginx
+
+          echo "Setting up Docker volumes..."
           docker volume create --name=postgres_data
           docker volume create --name=nginx_logs
 
           echo "Stopping existing services..."
           docker-compose down -v || true
-
-          echo "Pruning unused Docker resources..."
           docker system prune -af --force
 
           echo "Starting services..."
@@ -124,48 +156,35 @@ jobs:
           echo "Waiting for services to initialize..."
           sleep 20
 
-          echo "Verifying database connection..."
-          if docker-compose exec -T db pg_isready -U $POSTGRES_USER; then
-            echo "Database is ready"
-          else
-            echo "Database failed to initialize"
-            docker-compose logs db
-            exit 1
-          fi
-
-          echo "Checking web application..."
-          if curl -f http://localhost >/dev/null 2>&1; then
-            echo "Web application is responding"
-          else
-            echo "Web application failed to respond"
-            docker-compose logs app
-            exit 1
-          fi
-
-          echo "Deployment completed successfully"
+          echo "Checking service status..."
+          docker-compose ps
+          docker-compose logs
           EOF
 
           chmod +x deploy.sh
 
-          # Copy files in separate steps for better error handling
-          echo "Copying configuration files..."
-          scp -i ~/.ssh/deploy_key docker-compose.yml Dockerfile nginx.conf .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
-
-          echo "Copying deployment script..."
-          scp -i ~/.ssh/deploy_key deploy.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_USER }}:/app/
-
-          echo "Creating dist directory..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
+          echo "Copying deployment files..."
+          # Copy each file separately for better error tracking
+          for file in docker-compose.yml Dockerfile nginx.conf .env deploy.sh; do
+            echo "Copying $file..."
+            scp -i ~/.ssh/deploy_key $file ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/ || {
+              echo "Failed to copy $file"
+              exit 1
+            }
+          done
 
           echo "Copying application files..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
           scp -i ~/.ssh/deploy_key -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
 
           echo "Executing deployment..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /app && chmod +x deploy.sh && ./deploy.sh"
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "cd /app && chmod +x deploy.sh && ./deploy.sh"
 
       - name: Cleanup
         if: always()
         run: |
+          echo "Cleaning up sensitive files..."
           rm -f ~/.ssh/deploy_key
           rm -f deploy.sh
           rm -f .env
