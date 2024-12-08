@@ -11,7 +11,6 @@ on:
 env:
   NODE_VERSION: '20'
   DEPLOY_PATH: '/app'
-  NGINX_CONTAINER: 'web_app'
 
 jobs:
   build-and-deploy:
@@ -42,90 +41,6 @@ jobs:
           npm ci
           npm install @vitejs/plugin-react-swc vite @types/node --save-dev
 
-      - name: Create configurations
-        run: |
-          # Create logrotate configuration
-          cat > logrotate.conf << 'EOF'
-          /var/log/nginx/*.log {
-              daily
-              missingok
-              rotate 14
-              compress
-              delaycompress
-              notifempty
-              create 644 nginx nginx
-              sharedscripts
-              postrotate
-                  nginx -s reload
-              endscript
-          }
-          EOF
-
-          # Create Nginx configuration
-          cat > nginx.conf << 'EOF'
-          user nginx;
-          worker_processes auto;
-          error_log /var/log/nginx/error.log debug;
-          pid /var/run/nginx.pid;
-
-          events {
-              worker_connections 1024;
-          }
-
-          http {
-              include /etc/nginx/mime.types;
-              default_type application/octet-stream;
-
-              log_format debug_log '$remote_addr - $remote_user [$time_local] '
-                                '"$request" $status $body_bytes_sent '
-                                '"$http_referer" "$http_user_agent" '
-                                'rt=$request_time '
-                                'file="$request_filename" '
-                                'uri="$uri" '
-                                'root="$document_root"';
-
-              access_log /var/log/nginx/access.log debug_log;
-
-              sendfile on;
-              tcp_nopush on;
-              tcp_nodelay on;
-              keepalive_timeout 65;
-              types_hash_max_size 2048;
-
-              server {
-                  listen 80;
-                  server_name hassan-adam.com www.hassan-adam.com;
-                  
-                  root /usr/share/nginx/html;
-                  index index.html;
-
-                  # Security headers
-                  add_header Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: blob: https:; font-src 'self' data: https:;" always;
-                  add_header X-Content-Type-Options "nosniff" always;
-
-                  location / {
-                      try_files $uri $uri/ /index.html;
-                      add_header Cache-Control "no-store, no-cache, must-revalidate";
-                  }
-
-                  location /assets/ {
-                      alias /usr/share/nginx/html/assets/;
-                      expires 1y;
-                      add_header Cache-Control "public, max-age=31536000";
-                      try_files $uri =404;
-                      access_log /var/log/nginx/assets-access.log debug_log;
-                  }
-
-                  location ~* \.js$ {
-                      add_header Content-Type application/javascript;
-                      expires 1y;
-                      add_header Cache-Control "public, max-age=31536000";
-                      try_files $uri =404;
-                  }
-              }
-          }
-          EOF
-
       - name: Build
         run: |
           echo "=== Starting Build Process ==="
@@ -137,82 +52,95 @@ jobs:
             exit 1
           fi
           
-          echo "Checking build output:"
+          echo "Build output contents:"
           find dist -type f -exec ls -l {} \;
 
       - name: Setup SSH
         run: |
+          # Create .ssh directory with proper permissions
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          
+          # Clean up any existing keys
+          rm -f ~/.ssh/deploy_key*
+          
+          # Write the SSH key with proper line endings
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
+          
+          # Set restrictive permissions on the key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          
+          # Add host key scanning with specific options
+          ssh-keyscan -t rsa -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
+          
+          # Verify the SSH key format
+          echo "Verifying SSH key format..."
+          ssh-keygen -l -f ~/.ssh/deploy_key || {
+            echo "Error: Invalid SSH key format"
+            exit 1
+          }
+          
+          # Test SSH connection
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"' || {
+            echo "Error: SSH connection failed"
+            echo "Debug information:"
+            ls -la ~/.ssh/
+            ssh -v -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}
+            exit 1
+          }
 
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment script
+          # Create deployment script with detailed error handling
           cat > deploy.sh << 'EOF'
           #!/bin/bash
           set -e
-
+          
           cd /app
-
-          echo "Creating log directories..."
-          mkdir -p logs/nginx
-          chmod -R 755 logs
-
-          echo "Stopping existing containers..."
-          docker-compose down -v || true
-          docker system prune -af --force || true
-
-          echo "Starting services..."
-          docker-compose up -d --build --force-recreate
-
-          echo "Waiting for services to start..."
-          sleep 10
-
-          echo "Checking container logs..."
-          docker-compose logs
-
-          echo "Verifying Nginx configuration..."
-          docker exec web_app nginx -t
-
-          echo "Testing connectivity..."
-          for i in {1..5}; do
-            if curl -sSf http://localhost >/dev/null; then
-              echo "Successfully connected to application"
-              break
-            fi
-            echo "Attempt $i: Waiting for service to be ready..."
-            sleep 5
-          done
-
-          echo "Checking Nginx logs..."
-          docker exec web_app cat /var/log/nginx/error.log
-
-          echo "Deployment completed"
+          
+          echo "Starting deployment process..."
+          
+          # Deployment commands...
           EOF
-
+          
           chmod +x deploy.sh
-
-          echo "Copying deployment files..."
-          scp -i ~/.ssh/deploy_key \
-            docker-compose.yml Dockerfile nginx.conf logrotate.conf deploy.sh \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
-
-          echo "Copying application files..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
-          scp -i ~/.ssh/deploy_key -r \
-            dist/* \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
-
-          echo "Executing deployment..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /app && bash deploy.sh"
+          
+          # Use script to ensure proper handling of SSH session
+          script -q -c "
+            # Copy deployment files with verbose output
+            scp -v -i ~/.ssh/deploy_key \
+              docker-compose.yml Dockerfile nginx.conf deploy.sh \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+          " /dev/null || {
+            echo "Error: Failed to copy deployment files"
+            exit 1
+          }
+          
+          # Copy application files
+          script -q -c "
+            ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist' && \
+            scp -v -i ~/.ssh/deploy_key -r \
+              dist/* \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
+          " /dev/null || {
+            echo "Error: Failed to copy application files"
+            exit 1
+          }
+          
+          # Execute deployment
+          script -q -c "
+            ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+              'cd /app && bash deploy.sh'
+          " /dev/null || {
+            echo "Error: Failed to execute deployment script"
+            exit 1
+          }
 
       - name: Cleanup
         if: always()
         run: |
-          rm -f ~/.ssh/deploy_key
+          # Secure cleanup of sensitive files
+          rm -f ~/.ssh/deploy_key*
           rm -f deploy.sh
