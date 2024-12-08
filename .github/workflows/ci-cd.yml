@@ -47,100 +47,124 @@ jobs:
           rm -rf dist
           npm run build --verbose
           
+          echo "Verifying build output..."
           if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
             echo "Error: Build failed - critical files missing"
             exit 1
           fi
-          
-          echo "Build output contents:"
-          find dist -type f -exec ls -l {} \;
 
       - name: Setup SSH
         run: |
-          # Create .ssh directory with proper permissions
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
-          # Clean up any existing keys
-          rm -f ~/.ssh/deploy_key*
-          
-          # Write the SSH key with proper line endings
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
-          
-          # Set restrictive permissions on the key
+          echo "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
-          # Add host key scanning with specific options
-          ssh-keyscan -t rsa -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
-          
-          # Verify the SSH key format
-          echo "Verifying SSH key format..."
-          ssh-keygen -l -f ~/.ssh/deploy_key || {
-            echo "Error: Invalid SSH key format"
-            exit 1
-          }
-          
-          # Test SSH connection
-          echo "Testing SSH connection..."
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"' || {
-            echo "Error: SSH connection failed"
-            echo "Debug information:"
-            ls -la ~/.ssh/
-            ssh -v -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}
-            exit 1
-          }
+          ssh-keyscan -t rsa -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Create Environment File
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          EOF
 
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Create deployment script with detailed error handling
+          # Create deployment script
           cat > deploy.sh << 'EOF'
           #!/bin/bash
           set -e
-          
+
           cd /app
+
+          echo "Ensuring required directories exist..."
+          mkdir -p dist
           
-          echo "Starting deployment process..."
-          
-          # Deployment commands...
+          echo "Checking Docker volumes..."
+          docker volume create --name=postgres_data
+          docker volume create --name=nginx_logs
+
+          echo "Stopping existing services..."
+          docker-compose down -v || true
+
+          echo "Pruning unused Docker resources..."
+          docker system prune -af --force
+
+          echo "Starting services..."
+          docker-compose up -d --build --force-recreate
+
+          echo "Waiting for services to initialize..."
+          sleep 20
+
+          echo "Verifying database connection..."
+          if docker-compose exec -T db pg_isready -U $POSTGRES_USER; then
+            echo "Database is ready"
+          else
+            echo "Database failed to initialize"
+            docker-compose logs db
+            exit 1
+          fi
+
+          echo "Checking web application..."
+          if curl -f http://localhost >/dev/null 2>&1; then
+            echo "Web application is responding"
+          else
+            echo "Web application failed to respond"
+            docker-compose logs app
+            exit 1
+          fi
+
+          echo "Deployment completed successfully"
           EOF
-          
+
           chmod +x deploy.sh
-          
-          # Use script to ensure proper handling of SSH session
-          script -q -c "
-            # Copy deployment files with verbose output
-            scp -v -i ~/.ssh/deploy_key \
-              docker-compose.yml Dockerfile nginx.conf deploy.sh \
-              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
-          " /dev/null || {
-            echo "Error: Failed to copy deployment files"
-            exit 1
-          }
-          
-          # Copy application files
-          script -q -c "
-            ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /app/dist' && \
-            scp -v -i ~/.ssh/deploy_key -r \
-              dist/* \
-              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
-          " /dev/null || {
-            echo "Error: Failed to copy application files"
-            exit 1
-          }
-          
-          # Execute deployment
-          script -q -c "
-            ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-              'cd /app && bash deploy.sh'
-          " /dev/null || {
-            echo "Error: Failed to execute deployment script"
-            exit 1
-          }
+
+          echo "Copying deployment files..."
+          scp -i ~/.ssh/deploy_key \
+            docker-compose.yml Dockerfile nginx.conf .env deploy.sh \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+
+          echo "Copying application files..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
+          scp -i ~/.ssh/deploy_key -r \
+            dist/* \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
+
+          echo "Executing deployment..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "cd /app && chmod +x deploy.sh && ./deploy.sh"
+
+      - name: Send Deployment Status Email
+        if: always()
+        run: |
+          if [ -n "$RESEND_API_KEY" ]; then
+            DEPLOY_STATUS="${{ job.status }}"
+            DEPLOY_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            
+            curl -X POST \
+              -H "Authorization: Bearer $RESEND_API_KEY" \
+              -H "Content-Type: application/json" \
+              https://api.resend.com/emails \
+              -d '{
+                "from": "notifications@hassan-adam.com",
+                "to": "haskhr@hotmail.com",
+                "subject": "Deployment Status: '"$DEPLOY_STATUS"'",
+                "html": "
+                  <h2>Deployment Status: '"$DEPLOY_STATUS"'</h2>
+                  <p><strong>Repository:</strong> '"${{ github.repository }}"'</p>
+                  <p><strong>Branch:</strong> '"${GITHUB_REF#refs/heads/}"'</p>
+                  <p><strong>Commit:</strong> '"${{ github.sha }}"'</p>
+                  <p><strong>Triggered by:</strong> '"${{ github.actor }}"'</p>
+                  <p><strong>Deployment Time:</strong> '"$DEPLOY_TIME"'</p>
+                "
+              }'
+          fi
 
       - name: Cleanup
         if: always()
         run: |
-          # Secure cleanup of sensitive files
-          rm -f ~/.ssh/deploy_key*
+          rm -f ~/.ssh/deploy_key
           rm -f deploy.sh
+          rm -f .env
