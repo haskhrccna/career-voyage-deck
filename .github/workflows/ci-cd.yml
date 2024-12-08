@@ -55,15 +55,32 @@ jobs:
           echo "Checking build output:"
           find dist -type f -exec ls -l {} \;
 
-      # Simple, reliable SSH setup
-      - name: Setup SSH
+      - name: Setup and Debug SSH
         run: |
+          # Clean up any existing SSH files
           rm -rf ~/.ssh
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+    
+          # Write the key with echo, preserving any line breaks
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+    
+          # Debug: Check key format (safely)
+          echo "Checking key format..."
+          if ! grep -q "BEGIN OPENSSH PRIVATE KEY" ~/.ssh/deploy_key; then
+          echo "Error: Key is missing the expected header"
+          echo "First line of key file (sanitized):"
+          head -n 1 ~/.ssh/deploy_key | sed 's/.*/.../g'
+          exit 1
+          fi
+    
+          # Add the server to known hosts
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+    
+          # Verify the key is readable
+          echo "Checking key permissions..."
+          ls -la ~/.ssh/deploy_key
 
       # Verify SSH connection before proceeding
       - name: Verify SSH Connection
