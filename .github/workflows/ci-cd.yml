@@ -47,19 +47,28 @@ jobs:
           rm -rf dist
           npm run build --verbose
           
-          echo "Verifying build output..."
           if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
             echo "Error: Build failed - critical files missing"
             exit 1
           fi
+          
+          echo "Checking build output:"
+          find dist -type f -exec ls -l {} \;
 
+      # Simple, reliable SSH setup
       - name: Setup SSH
         run: |
+          rm -rf ~/.ssh
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      # Verify SSH connection before proceeding
+      - name: Verify SSH Connection
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection test successful"'
 
       - name: Create Environment File
         run: |
@@ -121,46 +130,21 @@ jobs:
 
           chmod +x deploy.sh
 
-          echo "Copying deployment files..."
-          scp -i ~/.ssh/deploy_key \
-            docker-compose.yml Dockerfile nginx.conf .env deploy.sh \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+          # Copy files in separate steps for better error handling
+          echo "Copying configuration files..."
+          scp -i ~/.ssh/deploy_key docker-compose.yml Dockerfile nginx.conf .env ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/
+
+          echo "Copying deployment script..."
+          scp -i ~/.ssh/deploy_key deploy.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_USER }}:/app/
+
+          echo "Creating dist directory..."
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
 
           echo "Copying application files..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /app/dist"
-          scp -i ~/.ssh/deploy_key -r \
-            dist/* \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
+          scp -i ~/.ssh/deploy_key -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/app/dist/
 
           echo "Executing deployment..."
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /app && chmod +x deploy.sh && ./deploy.sh"
-
-      - name: Send Deployment Status Email
-        if: always()
-        run: |
-          if [ -n "$RESEND_API_KEY" ]; then
-            DEPLOY_STATUS="${{ job.status }}"
-            DEPLOY_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-            
-            curl -X POST \
-              -H "Authorization: Bearer $RESEND_API_KEY" \
-              -H "Content-Type: application/json" \
-              https://api.resend.com/emails \
-              -d '{
-                "from": "notifications@hassan-adam.com",
-                "to": "haskhr@hotmail.com",
-                "subject": "Deployment Status: '"$DEPLOY_STATUS"'",
-                "html": "
-                  <h2>Deployment Status: '"$DEPLOY_STATUS"'</h2>
-                  <p><strong>Repository:</strong> '"${{ github.repository }}"'</p>
-                  <p><strong>Branch:</strong> '"${GITHUB_REF#refs/heads/}"'</p>
-                  <p><strong>Commit:</strong> '"${{ github.sha }}"'</p>
-                  <p><strong>Triggered by:</strong> '"${{ github.actor }}"'</p>
-                  <p><strong>Deployment Time:</strong> '"$DEPLOY_TIME"'</p>
-                "
-              }'
-          fi
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /app && chmod +x deploy.sh && ./deploy.sh"
 
       - name: Cleanup
         if: always()
